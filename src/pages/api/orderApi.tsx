@@ -1,7 +1,8 @@
 // api/orderApi.js
 import axios from "axios";
 
-const baseUrl = "https://localhost:7066";
+//const baseUrl = "https://localhost:7066";
+const baseUrl = "https://mobileeasyshop.onrender.com"
 const orderEndPoint = "/api/Dash/Order";
 const itemsEndPoint = "/api/Dash/Items";
 const productEndPoint = "/api/Dash/GetAllProduct"
