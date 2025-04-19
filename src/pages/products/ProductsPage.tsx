@@ -1,146 +1,70 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import {
   Plus,
   Search,
   Filter,
-  Edit,
-  Trash,
-  ChevronDown,
   Package,
   Grid,
   List,
 } from "lucide-react";
+
+import { fetchListProductData } from "../api/productApi";
 import ProductCard from "./components/ProductCard";
 import ProductListItem from "./components/ProductListItem";
 
-// Mock product data
-const initialProducts = [
-  {
-    id: "1",
-    name: "Wireless Headphones",
-    description:
-      "Premium noise-canceling wireless headphones with 30-hour battery life",
-    price: 129.99,
-    category: "Electronics",
-    inventory: 45,
-    status: "Active",
-    image:
-      "https://images.pexels.com/photos/3394650/pexels-photo-3394650.jpeg?auto=compress&cs=tinysrgb&w=300",
-  },
-  {
-    id: "2",
-    name: "Fitness Smartwatch",
-    description:
-      "Advanced fitness tracking smartwatch with heart rate monitoring and GPS",
-    price: 199.99,
-    category: "Electronics",
-    inventory: 32,
-    status: "Active",
-    image:
-      "https://images.pexels.com/photos/437037/pexels-photo-437037.jpeg?auto=compress&cs=tinysrgb&w=300",
-  },
-  {
-    id: "3",
-    name: "Laptop Backpack",
-    description:
-      'Durable, water-resistant backpack with multiple compartments for laptops up to 15.6"',
-    price: 59.95,
-    category: "Accessories",
-    inventory: 78,
-    status: "Active",
-    image:
-      "https://images.pexels.com/photos/1294731/pexels-photo-1294731.jpeg?auto=compress&cs=tinysrgb&w=300",
-  },
-  {
-    id: "4",
-    name: "Smart Home Speaker",
-    description:
-      "Voice-controlled smart speaker with premium sound and built-in virtual assistant",
-    price: 89.99,
-    category: "Electronics",
-    inventory: 54,
-    status: "Active",
-    image:
-      "https://images.pexels.com/photos/1279365/pexels-photo-1279365.jpeg?auto=compress&cs=tinysrgb&w=300",
-  },
-  {
-    id: "5",
-    name: "Portable Power Bank",
-    description:
-      "20,000mAh high-capacity power bank with fast charging for multiple devices",
-    price: 49.99,
-    category: "Electronics",
-    inventory: 67,
-    status: "Active",
-    image:
-      "https://images.pexels.com/photos/2769274/pexels-photo-2769274.jpeg?auto=compress&cs=tinysrgb&w=300",
-  },
-  {
-    id: "6",
-    name: "Adjustable Desk Lamp",
-    description:
-      "LED desk lamp with adjustable brightness levels and color temperatures",
-    price: 39.95,
-    category: "Home & Office",
-    inventory: 0,
-    status: "Out of Stock",
-    image:
-      "https://images.pexels.com/photos/1112598/pexels-photo-1112598.jpeg?auto=compress&cs=tinysrgb&w=300",
-  },
-  {
-    id: "7",
-    name: "Wireless Charging Pad",
-    description:
-      "Fast wireless charging pad compatible with all Qi-enabled devices",
-    price: 29.99,
-    category: "Electronics",
-    inventory: 43,
-    status: "Active",
-    image:
-      "https://images.pexels.com/photos/4526399/pexels-photo-4526399.jpeg?auto=compress&cs=tinysrgb&w=300",
-  },
-  {
-    id: "8",
-    name: "Bluetooth Earbuds",
-    description:
-      "True wireless Bluetooth earbuds with touch controls and charging case",
-    price: 79.99,
-    category: "Electronics",
-    inventory: 12,
-    status: "Low Stock",
-    image:
-      "https://images.pexels.com/photos/3780681/pexels-photo-3780681.jpeg?auto=compress&cs=tinysrgb&w=300",
-  },
-];
+type Product = {
+  id: number;
+  name: string;
+  description: string;
+  price: number;
+  category: string;
+  inventory: number;
+  status: string;
+  image: string;
+  stock: number;
+};
 
 const ProductsPage = () => {
-  const [products, setProducts] = useState(initialProducts);
+  const [products, setProducts] = useState<Product[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [selectedStatus, setSelectedStatus] = useState("All");
-  const [viewMode, setViewMode] = useState("grid"); // 'grid' or 'list'
+  const [viewMode, setViewMode] = useState("grid");
 
-  // Filter products based on search term, category, and status
+  useEffect(() => {
+    const loadProducts = async () => {
+      try {
+        const response = await fetchListProductData();
+        const orderArray = response.data.$values || [];
+        setProducts(orderArray);
+      } catch (error: any) {
+        alert(`Error fetching products: ${error.message}`);
+      }
+    };
+
+    loadProducts();
+  }, []);
+
+  const uniqueCategories = Array.from(
+    new Set(products.map((product) => product.category || "Uncategorized"))
+  );
+
   const filteredProducts = products.filter((product) => {
     const matchesSearch =
       product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       product.description.toLowerCase().includes(searchTerm.toLowerCase());
+
     const matchesCategory =
-      selectedCategory === "All" || product.category === selectedCategory;
+      selectedCategory === "All" || (product.category || "Uncategorized") === selectedCategory;
+
     const matchesStatus =
       selectedStatus === "All" || product.status === selectedStatus;
 
     return matchesSearch && matchesCategory && matchesStatus;
   });
 
-  // Get unique categories for filter dropdown
-  const categories = [
-    "All",
-    ...new Set(products.map((product) => product.category)),
-  ];
-
-  const handleDeleteProduct = (productId: string) => {
+  const handleDeleteProduct = (productId: number) => {
     if (window.confirm("Are you sure you want to delete this product?")) {
       setProducts(products.filter((product) => product.id !== productId));
     }
@@ -185,9 +109,10 @@ const ProductsPage = () => {
                 value={selectedCategory}
                 onChange={(e) => setSelectedCategory(e.target.value)}
               >
-                {categories.map((category) => (
-                  <option key={category} value={category}>
-                    {category}
+                <option value="All">All Categories</option>
+                {uniqueCategories.map((cat) => (
+                  <option key={cat} value={cat}>
+                    {cat}
                   </option>
                 ))}
               </select>
@@ -230,6 +155,7 @@ const ProductsPage = () => {
               <ProductCard
                 key={product.id}
                 product={product}
+                categoryNames={[product.category || "Uncategorized"]}
                 onDelete={() => handleDeleteProduct(product.id)}
               />
             ))}
@@ -240,42 +166,12 @@ const ProductsPage = () => {
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
                   <tr>
-                    <th
-                      scope="col"
-                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                    >
-                      Product
-                    </th>
-                    <th
-                      scope="col"
-                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                    >
-                      Category
-                    </th>
-                    <th
-                      scope="col"
-                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                    >
-                      Price
-                    </th>
-                    <th
-                      scope="col"
-                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                    >
-                      Inventory
-                    </th>
-                    <th
-                      scope="col"
-                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                    >
-                      Status
-                    </th>
-                    <th
-                      scope="col"
-                      className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
-                    >
-                      Actions
-                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Product</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Price</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Inventory</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
@@ -283,6 +179,7 @@ const ProductsPage = () => {
                     <ProductListItem
                       key={product.id}
                       product={product}
+                      categoryNames={[product.category || "Uncategorized"]}
                       onDelete={() => handleDeleteProduct(product.id)}
                     />
                   ))}
@@ -317,5 +214,6 @@ const ProductsPage = () => {
     </div>
   );
 };
+
 
 export default ProductsPage;

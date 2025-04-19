@@ -105,7 +105,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
               />
             ) : (
               <div className="h-10 w-10 rounded-full bg-blue-500 flex items-center justify-center text-white mr-3">
-                {user?.name.charAt(0).toUpperCase()}
+                {user?.name?.charAt(0).toUpperCase()}
               </div>
             )}
             <div>

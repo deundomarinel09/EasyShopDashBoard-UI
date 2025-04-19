@@ -116,7 +116,7 @@ const Header = ({ setSidebarOpen }: HeaderProps) => {
                 />
               ) : (
                 <div className="h-8 w-8 rounded-full bg-blue-500 flex items-center justify-center text-white">
-                  {user?.name.charAt(0).toUpperCase()}
+                  {user?.name?.charAt(0).toUpperCase()}
                 </div>
               )}
             </button>

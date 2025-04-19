@@ -3,7 +3,7 @@ import { Edit, Trash, Package } from "lucide-react";
 
 type ProductListItemProps = {
   product: {
-    id: string;
+    id: number;
     name: string;
     description: string;
     price: number;
@@ -13,7 +13,9 @@ type ProductListItemProps = {
     image: string;
   };
   onDelete: () => void;
+  categoryNames: string[];
 };
+
 
 const ProductListItem = ({ product, onDelete }: ProductListItemProps) => {
   const getStatusColor = (status: string) => {

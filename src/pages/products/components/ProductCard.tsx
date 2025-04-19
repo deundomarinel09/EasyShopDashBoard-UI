@@ -1,21 +1,23 @@
+import React from "react";
 import { Link } from "react-router-dom";
 import { Edit, Trash, Package } from "lucide-react";
 
 type ProductCardProps = {
   product: {
-    id: string;
+    id: number;
     name: string;
     description: string;
     price: number;
     category: string;
-    inventory: number;
+    stock: number;
     status: string;
     image: string;
   };
   onDelete: () => void;
+  categoryNames: string[];
 };
 
-const ProductCard = ({ product, onDelete }: ProductCardProps) => {
+const ProductCard = React.memo(({ product, onDelete }: ProductCardProps) => {
   const getStatusColor = (status: string) => {
     switch (status) {
       case "Active":
@@ -34,8 +36,9 @@ const ProductCard = ({ product, onDelete }: ProductCardProps) => {
       <div className="relative h-48 bg-gray-200">
         {product.image ? (
           <img
-            src={product.image}
+            src={`https://wyzlpxshonuzitdcgdoe.supabase.co/storage/v1/object/public/product-images//${product.image.replace(/^product-images\//, '')}`}
             alt={product.name}
+            loading="lazy"
             className="w-full h-full object-cover"
           />
         ) : (
@@ -57,10 +60,12 @@ const ProductCard = ({ product, onDelete }: ProductCardProps) => {
             <h3 className="text-lg font-semibold text-gray-900 line-clamp-1">
               {product.name}
             </h3>
-            <p className="text-sm text-gray-500 mb-1">{product.category}</p>
+            <p className={`text-sm mb-1 ${product.category ? 'text-gray-500' : 'text-red-500'}`}>
+              {product.category || "Uncategorized"}
+            </p>
           </div>
           <p className="text-lg font-bold text-blue-600">
-            ${product.price.toFixed(2)}
+            ₱{product.price.toFixed(2)}
           </p>
         </div>
         <p className="text-sm text-gray-700 mb-3 line-clamp-2">
@@ -68,7 +73,7 @@ const ProductCard = ({ product, onDelete }: ProductCardProps) => {
         </p>
         <div className="flex items-center justify-between pt-3 border-t border-gray-100">
           <p className="text-sm text-gray-600">
-            <span className="font-medium">{product.inventory}</span> in stock
+            <span className="font-medium">{product.stock}</span> in stock
           </p>
           <div className="flex space-x-2">
             <Link
@@ -93,6 +98,18 @@ const ProductCard = ({ product, onDelete }: ProductCardProps) => {
       </div>
     </div>
   );
-};
+}, areEqual);
+
+// Optional: Custom equality check to avoid re-renders unless `product.id` or key fields change
+function areEqual(prevProps: ProductCardProps, nextProps: ProductCardProps) {
+  return (
+    prevProps.product.id === nextProps.product.id &&
+    prevProps.product.name === nextProps.product.name &&
+    prevProps.product.image === nextProps.product.image &&
+    prevProps.product.status === nextProps.product.status &&
+    prevProps.product.stock === nextProps.product.stock
+    // You can add more checks if needed, or serialize and compare JSON
+  );
+}
 
 export default ProductCard;

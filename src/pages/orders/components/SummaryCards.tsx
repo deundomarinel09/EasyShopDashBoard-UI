@@ -5,13 +5,13 @@ import { CircleDollarSign } from "lucide-react";
 interface SummaryCardsProps {
   totalAmount: number;
   pendingAmount: number;
-  refundedAmount: number;
+  cancelledAmount: number;
 }
 
 const SummaryCards: React.FC<SummaryCardsProps> = ({
   totalAmount,
   pendingAmount,
-  refundedAmount,
+  cancelledAmount,
 }) => {
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -52,9 +52,9 @@ const SummaryCards: React.FC<SummaryCardsProps> = ({
             <CircleDollarSign className="h-6 w-6 text-purple-600" />
           </div>
           <div>
-            <p className="text-sm font-medium text-gray-500">Refunded</p>
+            <p className="text-sm font-medium text-gray-500">Cancelled</p>
             <p className="text-2xl font-bold text-gray-900">
-              {refundedAmount.toFixed(2)}
+              {cancelledAmount.toFixed(2)}
             </p>
           </div>
         </div>

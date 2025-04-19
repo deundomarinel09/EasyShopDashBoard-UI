@@ -8,7 +8,7 @@ type Order = {
   date: string;
   amount: number;
   status: string;
-  items: number;
+  items: Array<string>;
   payment: string;
 };
 
@@ -26,11 +26,11 @@ const OrdersTable = ({ filteredOrders, onViewClick }: OrdersTableProps) => {
             <tr>
               {[
                 "Order REF",
-                "Customer",
+                "Name",
+                "Email",
                 "Date",
                 "Amount",
                 "Status",
-                "Items",
                 "Payment",
                 "Actions",
               ].map((header) => (
@@ -56,6 +56,10 @@ const OrdersTable = ({ filteredOrders, onViewClick }: OrdersTableProps) => {
                   <td className="px-6 py-4 text-sm text-gray-900">
                     <div>
                       <p>{order.customer}</p>
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 text-sm text-gray-900">
+                    <div>
                       <p>{order.email}</p>
                     </div>
                   </td>
@@ -72,9 +76,6 @@ const OrdersTable = ({ filteredOrders, onViewClick }: OrdersTableProps) => {
                       {getStatusIcon(order.status)}
                       <span className="ml-1">{order.status}</span>
                     </span>
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-900">
-                    {order.items}
                   </td>
                   <td className="px-6 py-4 text-sm text-gray-900">
                     {order.payment}

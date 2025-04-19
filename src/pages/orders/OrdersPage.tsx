@@ -5,6 +5,8 @@ import { fetchOrderData, updateOrderStatus, fetchItemData, fetchProductData } fr
 import OrderModal from "./components/OrderModal";
 import SummaryCards from "./components/SummaryCards";
 import OrdersTable from "./components/OrdersTable";
+import { exportToCSV } from "./components/exportCsv";
+
 
 
 type Order = {
@@ -14,7 +16,7 @@ type Order = {
   date: string;
   amount: number;
   status: string;
-  items: number;
+  items: Array<string>;
   payment: string;
 };
 
@@ -35,7 +37,7 @@ const OrdersPage = () => {
       const productArray = response.data?.$values || response.data;
       setProducts(productArray);
     } catch (error: any) {
-      alert(`Error fetching products: ${error}`);
+      console.error(`Error fetching products: ${error}`);
 
     }
   };
@@ -46,7 +48,7 @@ const OrdersPage = () => {
       const itemArray = response.data?.$values || response.data;
       setItems(itemArray);
     } catch (error: any) {
-      alert(`Error fetching items: ${error}`);
+      console.error(`Error fetching items: ${error}`);
     }
   };
 
@@ -64,19 +66,11 @@ const OrdersPage = () => {
         ordersRef.current = orderArray;
       }
     } catch (error: any) {
-      alert(`Error fetching orders: ${error}`);
+      console.error(`Error fetching orders: ${error}`);
     }
   };
 
-  useEffect(() => {
-    fetchAndUpdateOrders();
-    fetchAndUpdateItems();
-    fetchAndUpdateProducts();
 
-
-    const interval = setInterval(fetchAndUpdateOrders, 5000);
-    return () => clearInterval(interval);
-  }, []);
 
   const filteredOrders = orders.filter((order) => {
     const matchesSearch =
@@ -98,7 +92,7 @@ const OrdersPage = () => {
     (sum, order) => (order.status === "Pending" ? sum + order.amount : sum),
     0,
   );
-  const refundedAmount = orders.reduce(
+  const cancelledAmount = orders.reduce(
     (sum, order) => (order.status === "Cancelled" ? sum + order.amount : sum),
     0,
   );
@@ -112,6 +106,22 @@ const OrdersPage = () => {
     setSelectedOrder(order);
     setIsModalOpen(true);
   };
+
+  useEffect(() => {
+    // Run the fetch functions when the component mounts or `selectedOrder` changes
+    fetchAndUpdateOrders();
+    fetchAndUpdateItems();
+    fetchAndUpdateProducts();
+
+    // Set up interval to fetch orders every 5 seconds
+    const interval = setInterval(() => {
+        fetchAndUpdateOrders(); // This will keep updating orders every 5 seconds
+    }, 5000);
+
+    // Cleanup interval on component unmount
+    return () => clearInterval(interval);
+}, [selectedOrder]);  // `selectedOrder` dependency ensures the effect runs when `selectedOrder` changes
+
   // Sample status options for the dropdown
   const statusOptions = [
     "Pending",
@@ -138,12 +148,16 @@ const OrdersPage = () => {
         await updateOrderStatus(selectedOrder.id, updatedStatus);
 
         // After successfully updating the status, you can close the modal and reset states
-        alert("Order status updated successfully!");
+        console.error("Order status updated successfully!");
         closeModal();
       } catch (error) {
-        alert(`Failed to update order status: ${error}`);
+        console.error(`Failed to update order status: ${error}`);
       }
     }
+  };
+
+  const handleExport = () => {
+    exportToCSV(filteredOrders); // Call the export function with the filtered orders
   };
 
   return (
@@ -157,7 +171,7 @@ const OrdersPage = () => {
       <SummaryCards
         totalAmount={totalAmount}
         pendingAmount={pendingAmount}
-        refundedAmount={refundedAmount}
+        cancelledAmount={cancelledAmount}
       />
 
       {/* Filters and Search */}
@@ -208,7 +222,9 @@ const OrdersPage = () => {
               <option value="Last30Days">Last 30 Days</option>
             </select>
 
-            <button className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+            <button className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+            onClick={handleExport}
+            >
               <Download className="h-4 w-4 mr-2" />
               Export
             </button>

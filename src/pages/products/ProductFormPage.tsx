@@ -1,59 +1,84 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
-import { ArrowLeft, Save, Upload, X } from "lucide-react";
+import { ArrowLeft, Save } from "lucide-react";
+import CreatableSelect from 'react-select/creatable';
 
-// Mock product data (would come from API in real app)
-const mockProducts = [
-  {
-    id: "1",
-    name: "Wireless Headphones",
-    description:
-      "Premium noise-canceling wireless headphones with 30-hour battery life",
-    price: 129.99,
-    category: "Electronics",
-    inventory: 45,
-    status: "Active",
-    sku: "WH-001",
-    weight: "0.5",
-    dimensions: "7.5 x 6.5 x 3.5",
-    attributes: [
-      { name: "Color", value: "Black" },
-      { name: "Connectivity", value: "Bluetooth 5.0" },
-    ],
-    image:
-      "https://images.pexels.com/photos/3394650/pexels-photo-3394650.jpeg?auto=compress&cs=tinysrgb&w=300",
-  },
-  {
-    id: "2",
-    name: "Fitness Smartwatch",
-    description:
-      "Advanced fitness tracking smartwatch with heart rate monitoring and GPS",
-    price: 199.99,
-    category: "Electronics",
-    inventory: 32,
-    status: "Active",
-    sku: "FS-002",
-    weight: "0.1",
-    dimensions: "4.5 x 4.5 x 1.2",
-    attributes: [
-      { name: "Color", value: "Black/Silver" },
-      { name: "Water Resistance", value: "5 ATM" },
-    ],
-    image:
-      "https://images.pexels.com/photos/437037/pexels-photo-437037.jpeg?auto=compress&cs=tinysrgb&w=300",
-  },
-];
+
+
+import { fetchListProductByIdData, fetchCategoriesData, fetchUpdateProductData, fetchAddProductData} from "../api/productApi";
+
 
 type Attribute = {
   name: string;
   value: string;
 };
 
+type Product = {
+  id: number;
+  name: string;
+  description: string;
+  price: number;
+  category: string;
+  inventory: number;
+  status: string;
+  sku: string;
+  weight: string;
+  dimensions: string;
+  image: string;
+  attributes: Attribute[];
+  stock: number;
+};
+
+type Categories = {
+  id: number,
+  name: string
+}
+
+type CategoryResponse = {
+  $values: Categories[];
+};
+
 const ProductFormPage = () => {
   const { id } = useParams();
+  const numericId = Number(id);
   const navigate = useNavigate();
+  const [productData, setProduct] = useState<Product | null>(null);
+  const [CategoriesData, setCategories] = useState<Categories[] | null>(null);
+  const [imageFile, setImageFile] = useState<File | null>(null);
   const isEditMode = !!id;
 
+
+  useEffect(() => {
+    if (isEditMode && numericId) {
+      const loadProducts = async () => {
+        try {
+          const response = await fetchListProductByIdData(numericId);
+          const fetchedProduct = response.data || null;
+          setProduct(fetchedProduct);
+        } catch (error: any) {
+          alert(`Error fetching product: ${error.message}`);
+        }
+      };
+  
+      loadProducts();
+    }
+  }, [isEditMode, numericId]);
+
+  useEffect(() => {
+    const loadCategories = async () => {
+      try {
+        const response = await fetchCategoriesData();
+        const fetchedCategories = (response.data as CategoryResponse)?.$values || [];
+        setCategories(fetchedCategories); 
+      } catch (error: any) {
+        alert(`Error fetching categories: ${error.message}`);
+      }
+    };
+  
+    loadCategories();
+  }, []); 
+  
+  
   // Form state
   const [formData, setFormData] = useState({
     name: "",
@@ -67,31 +92,28 @@ const ProductFormPage = () => {
     dimensions: "",
     image: "",
   });
-  const [attributes, setAttributes] = useState<Attribute[]>([]);
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [isSaving, setIsSaving] = useState(false);
 
   // Load product data if in edit mode
   useEffect(() => {
-    if (isEditMode) {
-      const product = mockProducts.find((p) => p.id === id);
-      if (product) {
-        setFormData({
-          name: product.name,
-          description: product.description,
-          price: product.price.toString(),
-          category: product.category,
-          inventory: product.inventory.toString(),
-          status: product.status,
-          sku: product.sku,
-          weight: product.weight,
-          dimensions: product.dimensions,
-          image: product.image,
-        });
-        setAttributes(product.attributes || []);
+    if (isEditMode && productData) {
+      setFormData({
+        name: productData.name,
+        description: productData.description,
+        price: productData.price.toString(),
+        category: productData.category || "",
+        inventory: productData.stock.toString(),
+        status: productData.status || "Active",
+        sku: productData.sku || "",
+        weight: productData.weight || "",
+        dimensions: productData.dimensions || "",
+        image: productData.image || "",
+      });
       }
-    }
-  }, [id, isEditMode]);
+  }, [numericId, isEditMode, productData]);
+  
+  
 
   const handleChange = (
     e: React.ChangeEvent<
@@ -109,26 +131,6 @@ const ProductFormPage = () => {
         return newErrors;
       });
     }
-  };
-
-  const handleAttributeChange = (
-    index: number,
-    field: "name" | "value",
-    value: string,
-  ) => {
-    const newAttributes = [...attributes];
-    newAttributes[index][field] = value;
-    setAttributes(newAttributes);
-  };
-
-  const addAttribute = () => {
-    setAttributes([...attributes, { name: "", value: "" }]);
-  };
-
-  const removeAttribute = (index: number) => {
-    const newAttributes = [...attributes];
-    newAttributes.splice(index, 1);
-    setAttributes(newAttributes);
   };
 
   const validateForm = () => {
@@ -165,24 +167,93 @@ const ProductFormPage = () => {
     return newErrors;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+  
+    console.log("Submit triggered");
 
     const newErrors = validateForm();
+    console.log("Submit triggered newErrors",newErrors);
+
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
       return;
     }
-
+  
     setIsSaving(true);
-
-    // Simulate API call
-    setTimeout(() => {
-      setIsSaving(false);
-      // In a real app, you would save the data to your API here
+  
+    try {
+      if (isEditMode) {
+        await handleUpdateProduct(); // Save product
+      } else {
+       await handleAddProduct();
+        // await fetchCreateProductData(newProduct);
+      }
       navigate("/products");
-    }, 1000);
+    } catch (error: any) {
+      alert("Error saving product: " + error.message);
+    } finally {
+      setIsSaving(false);
+    }
   };
+  
+  console.log("is edit",isEditMode);
+  const handleAddProduct = async () => {
+    try {
+      const form = new FormData();
+      form.append("name", formData.name.trim());
+      form.append("description", formData.description.trim());
+      form.append("price", formData.price);
+      form.append("stock", formData.inventory);
+      form.append("category", formData.category);
+      form.append("status", formData.status);
+      form.append("sku", formData.sku.trim());
+      form.append("weight", formData.weight.trim());
+      form.append("dimensions", formData.dimensions.trim());
+      form.append("createDate", new Date().toISOString());
+      form.append("image", formData.name.trim().replace(/\s+/g, ''));
+  
+      if (imageFile) {
+        form.append("imageFile", imageFile);
+      }
+  console.log("init add product");
+      const response = await fetchAddProductData(form);
+      alert("Product added successfully!");
+    } catch (error: any) {
+      alert("Error adding product: " + error.message);
+    }
+  };
+  
+
+ const handleUpdateProduct = async () => {
+  try {
+    const form = new FormData();
+    form.append("id", numericId.toString());
+    form.append("name", formData.name.trim());
+    form.append("description", formData.description.trim());
+    form.append("price", formData.price);
+    form.append("stock", formData.inventory);
+    form.append("category", formData.category);
+    form.append("status", formData.status);
+    form.append("sku", formData.sku.trim());
+    form.append("weight", formData.weight.trim());
+    form.append("dimensions", formData.dimensions.trim());
+    form.append("createDate", new Date().toISOString());
+    form.append("image", formData.name.trim().replace(/\s+/g, ''));
+
+    if (imageFile) {
+      form.append("imageFile", imageFile);
+    }
+
+    const response = await fetchUpdateProductData(form);
+
+    alert("Product updated successfully!");
+  } catch (error: any) {
+    alert("Error updating product: " + error.message);
+  }
+};
+
+  
 
   return (
     <div className="space-y-6">
@@ -236,8 +307,14 @@ const ProductFormPage = () => {
         </div>
       </div>
 
-      <form id="product-form" onSubmit={handleSubmit} className="space-y-8">
-        <div className="bg-white shadow-sm rounded-lg overflow-hidden">
+      <form
+  id="product-form"
+  onSubmit={handleSubmit}
+  className="space-y-8"
+  encType="multipart/form-data"
+>
+
+        <div className="bg-slate-200 shadow-sm rounded-lg overflow-hidden">
           <div className="p-6">
             <h2 className="text-lg font-medium text-gray-900 mb-4">
               Basic Information
@@ -266,6 +343,45 @@ const ProductFormPage = () => {
                   <p className="mt-1 text-sm text-red-600">{errors.name}</p>
                 )}
               </div>
+
+            
+
+              <div className="sm:col-span-6">
+  <label
+    htmlFor="image"
+    className="block text-sm font-medium text-gray-700"
+  >
+    Upload Image
+  </label>
+  <input
+    type="file"
+    name="image"
+    id="image"
+    accept="image/*"
+    onChange={(e) => {
+      if (e.target.files && e.target.files.length > 0) {
+        setImageFile(e.target.files[0]);
+      }
+    }}
+    className="mt-1 block w-full text-sm text-gray-900 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+  />
+  {/* Image Preview */}
+  {(imageFile || formData.image) && (
+    <img
+    src={
+      imageFile
+        ? URL.createObjectURL(imageFile) // If new image is uploaded
+        : `https://wyzlpxshonuzitdcgdoe.supabase.co/storage/v1/object/public/product-images//${formData.image.replace(/^product-images\//, '')}` // If image is fetched from the existing product
+    }
+    alt="Product Preview"
+    className="mt-2 h-40 object-contain border rounded"
+  
+    />
+  )}
+</div>
+
+
+
 
               <div className="sm:col-span-6">
                 <label
@@ -341,225 +457,41 @@ const ProductFormPage = () => {
                 )}
               </div>
 
-              <div className="sm:col-span-3">
-                <label
-                  htmlFor="category"
-                  className="block text-sm font-medium text-gray-700"
-                >
-                  Category <span className="text-red-500">*</span>
-                </label>
-                <select
-                  id="category"
-                  name="category"
-                  value={formData.category}
-                  onChange={handleChange}
-                  className={`mt-1 block w-full rounded-md shadow-sm ${
-                    errors.category
-                      ? "border-red-300 focus:ring-red-500 focus:border-red-500"
-                      : "border-gray-300 focus:ring-blue-500 focus:border-blue-500"
-                  }`}
-                >
-                  <option value="">Select a category</option>
-                  <option value="Electronics">Electronics</option>
-                  <option value="Accessories">Accessories</option>
-                  <option value="Home & Office">Home & Office</option>
-                  <option value="Clothing">Clothing</option>
-                  <option value="Sports & Outdoors">Sports & Outdoors</option>
-                </select>
-                {errors.category && (
-                  <p className="mt-1 text-sm text-red-600">{errors.category}</p>
-                )}
-              </div>
 
-              <div className="sm:col-span-3">
-                <label
-                  htmlFor="status"
-                  className="block text-sm font-medium text-gray-700"
-                >
-                  Status
-                </label>
-                <select
-                  id="status"
-                  name="status"
-                  value={formData.status}
-                  onChange={handleChange}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500"
-                >
-                  <option value="Active">Active</option>
-                  <option value="Draft">Draft</option>
-                  <option value="Out of Stock">Out of Stock</option>
-                  <option value="Discontinued">Discontinued</option>
-                </select>
-              </div>
+              <CreatableSelect
+  name="category"
+  id="category"
+  value={formData.category ? { label: formData.category, value: formData.category } : null}
+  onChange={(selectedOption) => {
+    handleChange({
+      target: {
+        name: "category",
+        value: selectedOption?.value ?? ""
+      }
+    } as React.ChangeEvent<HTMLSelectElement>);
+  }}
+  options={CategoriesData?.map((category) => ({
+    label: category.name.toUpperCase(),
+    value: category.name.toUpperCase()
+  }))}
+  className={`mt-1 block w-full rounded-md shadow-sm ${
+    errors.category
+      ? "border-red-300 focus:ring-red-500 focus:border-red-500"
+      : "border-gray-300 focus:ring-blue-500 focus:border-blue-500"
+  }`}
+  isClearable
+  placeholder="Select or type a category"
+  menuPortalTarget={document.body}
+/>
+
+
+
+
             </div>
           </div>
         </div>
 
-        <div className="bg-white shadow-sm rounded-lg overflow-hidden">
-          <div className="p-6">
-            <h2 className="text-lg font-medium text-gray-900 mb-4">
-              Additional Details
-            </h2>
-            <div className="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
-              <div className="sm:col-span-2">
-                <label
-                  htmlFor="sku"
-                  className="block text-sm font-medium text-gray-700"
-                >
-                  SKU
-                </label>
-                <input
-                  type="text"
-                  name="sku"
-                  id="sku"
-                  value={formData.sku}
-                  onChange={handleChange}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500"
-                />
-              </div>
 
-              <div className="sm:col-span-2">
-                <label
-                  htmlFor="weight"
-                  className="block text-sm font-medium text-gray-700"
-                >
-                  Weight (kg)
-                </label>
-                <input
-                  type="text"
-                  name="weight"
-                  id="weight"
-                  value={formData.weight}
-                  onChange={handleChange}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500"
-                />
-              </div>
-
-              <div className="sm:col-span-2">
-                <label
-                  htmlFor="dimensions"
-                  className="block text-sm font-medium text-gray-700"
-                >
-                  Dimensions (cm)
-                </label>
-                <input
-                  type="text"
-                  name="dimensions"
-                  id="dimensions"
-                  placeholder="L x W x H"
-                  value={formData.dimensions}
-                  onChange={handleChange}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500"
-                />
-              </div>
-
-              <div className="sm:col-span-6">
-                <label className="block text-sm font-medium text-gray-700">
-                  Attributes
-                </label>
-                {attributes.length > 0 ? (
-                  <div className="mt-1 space-y-3">
-                    {attributes.map((attr, index) => (
-                      <div key={index} className="flex items-center space-x-2">
-                        <input
-                          type="text"
-                          placeholder="Attribute name"
-                          value={attr.name}
-                          onChange={(e) =>
-                            handleAttributeChange(index, "name", e.target.value)
-                          }
-                          className="block w-full rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500"
-                        />
-                        <input
-                          type="text"
-                          placeholder="Attribute value"
-                          value={attr.value}
-                          onChange={(e) =>
-                            handleAttributeChange(
-                              index,
-                              "value",
-                              e.target.value,
-                            )
-                          }
-                          className="block w-full rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500"
-                        />
-                        <button
-                          type="button"
-                          onClick={() => removeAttribute(index)}
-                          className="p-2 text-red-600 hover:text-red-900 rounded-full hover:bg-red-50"
-                        >
-                          <X className="h-5 w-5" />
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <p className="mt-1 text-sm text-gray-500">
-                    No attributes added yet.
-                  </p>
-                )}
-                <button
-                  type="button"
-                  onClick={addAttribute}
-                  className="mt-3 inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded text-blue-700 bg-blue-100 hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                >
-                  + Add Attribute
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white shadow-sm rounded-lg overflow-hidden">
-          <div className="p-6">
-            <h2 className="text-lg font-medium text-gray-900 mb-4">
-              Product Image
-            </h2>
-            <div className="space-y-4">
-              <div className="flex items-center space-x-6">
-                <div className="w-32 h-32 bg-gray-100 rounded-lg overflow-hidden flex items-center justify-center">
-                  {formData.image ? (
-                    <img
-                      src={formData.image}
-                      alt="Product preview"
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <div className="text-gray-400 text-center">
-                      <Upload className="mx-auto h-10 w-10" />
-                      <p className="text-xs mt-1">No image</p>
-                    </div>
-                  )}
-                </div>
-                <div className="flex-1">
-                  <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-3">
-                    <label
-                      htmlFor="image-url"
-                      className="block text-sm font-medium text-gray-700 sm:w-24"
-                    >
-                      Image URL
-                    </label>
-                    <div className="flex-1">
-                      <input
-                        type="text"
-                        id="image-url"
-                        name="image"
-                        value={formData.image}
-                        onChange={handleChange}
-                        className="block w-full rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500"
-                        placeholder="https://example.com/image.jpg"
-                      />
-                    </div>
-                  </div>
-                  <p className="mt-2 text-sm text-gray-500">
-                    Enter a URL for the product image. Recommended size: 800x800
-                    pixels.
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
       </form>
     </div>
   );
