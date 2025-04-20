@@ -22,7 +22,7 @@ export const fetchItemData = () => {
 
 export const updateOrderStatus = async (orderId: string, newStatus: string) => {
   try {
-    const response = await fetch(`${baseUrl}${updateOrderStatusEndpoint}`, {
+    const response = await fetch(`${testUrl}${updateOrderStatusEndpoint}`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
