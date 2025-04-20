@@ -9,7 +9,6 @@ type Order = {
     amount: number;
     status: string;
     items: Array<string>;
-    payment: string;
   };
   
   // Export function with typed orders
@@ -22,7 +21,6 @@ type Order = {
         "Date",
         "Amount",
         "Status",
-        "Payment",
       ];
   
       console.log("orders", orders);
@@ -35,7 +33,6 @@ type Order = {
         order.date,
         order.amount,
         order.status,
-        order.payment,
       ]);
     
       // Join everything together into a CSV string
