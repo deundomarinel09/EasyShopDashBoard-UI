@@ -9,7 +9,6 @@ type Order = {
   amount: number;
   status: string;
   items: Array<string>;
-  payment: string;
 };
 
 type OrdersTableProps = {
@@ -31,7 +30,6 @@ const OrdersTable = ({ filteredOrders, onViewClick }: OrdersTableProps) => {
                 "Date",
                 "Amount",
                 "Status",
-                "Payment",
                 "Actions",
               ].map((header) => (
                 <th
@@ -76,9 +74,6 @@ const OrdersTable = ({ filteredOrders, onViewClick }: OrdersTableProps) => {
                       {getStatusIcon(order.status)}
                       <span className="ml-1">{order.status}</span>
                     </span>
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-900">
-                    {order.payment}
                   </td>
                   <td className="px-6 py-4 text-sm">
                     <button
