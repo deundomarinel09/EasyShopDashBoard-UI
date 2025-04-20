@@ -84,18 +84,36 @@ const OrdersPage = () => {
     return matchesSearch && matchesStatus;
   });
 
-  const totalAmount = orders.reduce(
-    (sum, order) => (order.status === "Completed" ? sum + order.amount : sum),
+  const totalPending = orders.reduce(
+    (sum, order) => (order.status.toLowerCase() === "pending" ? sum + order.amount : sum),
     0,
   );
-  const pendingAmount = orders.reduce(
-    (sum, order) => (order.status === "Pending" ? sum + order.amount : sum),
+  
+  const totalProcessing = orders.reduce(
+    (sum, order) => (order.status.toLowerCase() === "processing" ? sum + order.amount : sum),
     0,
   );
-  const cancelledAmount = orders.reduce(
-    (sum, order) => (order.status === "Cancelled" ? sum + order.amount : sum),
+  
+  const totalShipped = orders.reduce(
+    (sum, order) => (order.status.toLowerCase() === "shipped" ? sum + order.amount : sum),
     0,
   );
+  
+  const totalCompleted = orders.reduce(
+    (sum, order) => (order.status.toLowerCase() === "completed" ? sum + order.amount : sum),
+    0,
+  );
+  
+  const totalCancelled = orders.reduce(
+    (sum, order) => (order.status.toLowerCase() === "cancelled" ? sum + order.amount : sum),
+    0,
+  );
+  
+  const grandTotal = orders.reduce(
+    (sum, order) => sum + order.amount,
+    0,
+  );
+  
 
   //for MODAL FUNCTIONALITY
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -174,9 +192,14 @@ const OrdersPage = () => {
 
       {/* Summary Cards Component */}
       <SummaryCards
-        totalAmount={totalAmount}
-        pendingAmount={pendingAmount}
-        cancelledAmount={cancelledAmount}
+        totalPending ={totalPending}
+        totalProcessing  ={totalProcessing}
+        totalShipped ={totalShipped}
+        totalCompleted  ={totalCompleted}
+        totalCancelled  ={totalCancelled}
+        grandTotal   ={grandTotal}
+
+
       />
 
       {/* Filters and Search */}
