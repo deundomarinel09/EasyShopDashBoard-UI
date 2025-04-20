@@ -144,11 +144,16 @@ const OrdersPage = () => {
   const handleSave = async () => {
     if (selectedOrder) {
       try {
+
+        const statusToSave = !updatedStatus || updatedStatus === selectedOrder.status
+        ? selectedOrder.status
+        : updatedStatus;
+      
         // Call your updateOrderStatus function here
-        await updateOrderStatus(selectedOrder.id, updatedStatus);
+        await updateOrderStatus(selectedOrder.id, statusToSave);
 
         // After successfully updating the status, you can close the modal and reset states
-        console.error("Order status updated successfully!");
+        alert("Order status updated successfully!");
         closeModal();
       } catch (error) {
         console.error(`Failed to update order status: ${error}`);

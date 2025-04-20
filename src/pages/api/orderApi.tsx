@@ -1,7 +1,7 @@
 // api/orderApi.js
 import axios from "axios";
 
-//const testUrl = "https://localhost:7066";
+const testUrl = "https://localhost:7066";
 const baseUrl = "https://mobileeasyshop.onrender.com"
 const orderEndPoint = "/api/Dash/Order";
 const itemsEndPoint = "/api/Dash/Items";
@@ -22,7 +22,6 @@ export const fetchItemData = () => {
 
 export const updateOrderStatus = async (orderId: string, newStatus: string) => {
   try {
-    console.log(`orderId: ${orderId}  newStatus: ${newStatus}`)
     const response = await fetch(`${baseUrl}${updateOrderStatusEndpoint}`, {
       method: "POST",
       headers: {

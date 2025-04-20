@@ -170,10 +170,7 @@ const ProductFormPage = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
   
-    console.log("Submit triggered");
-
     const newErrors = validateForm();
-    console.log("Submit triggered newErrors",newErrors);
 
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
@@ -197,7 +194,6 @@ const ProductFormPage = () => {
     }
   };
   
-  console.log("is edit",isEditMode);
   const handleAddProduct = async () => {
     try {
       const form = new FormData();
@@ -216,7 +212,6 @@ const ProductFormPage = () => {
       if (imageFile) {
         form.append("imageFile", imageFile);
       }
-  console.log("init add product");
       const response = await fetchAddProductData(form);
       alert("Product added successfully!");
     } catch (error: any) {

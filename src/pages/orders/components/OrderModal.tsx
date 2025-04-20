@@ -1,5 +1,6 @@
-import React from "react";
 import { handlePrint } from "./printUtils";
+import React, { useEffect, useState } from "react";
+
 
 interface OrderModalProps {
   isModalOpen: boolean;
@@ -24,6 +25,14 @@ const OrderModal: React.FC<OrderModalProps> = ({
   items,
   products,
 }) => {
+
+  const [localStatus, setLocalStatus] = useState("");
+
+useEffect(() => {
+  if (selectedOrder) {
+    setLocalStatus(selectedOrder.status);
+  }
+}, [selectedOrder]);
 
   return (
     <>
@@ -71,18 +80,19 @@ const OrderModal: React.FC<OrderModalProps> = ({
                 >
                   Update Status
                 </label>
-                <select
-                  id="status"
-                  className="block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  value={updatedStatus}
-                  onChange={handleStatusChange}
-                >
-                  {statusOptions.map((status) => (
-                    <option key={status} value={status}>
-                      {status}
-                    </option>
-                  ))}
-                </select>
+               <select
+  id="status"
+  value={localStatus}
+  onChange={(e) => setLocalStatus(e.target.value)}
+  className="block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+>
+  {statusOptions.map((status) => (
+    <option key={status} value={status}>
+      {status}
+    </option>
+  ))}
+</select>
+
               </div>
 
               {/* Items Table */}
