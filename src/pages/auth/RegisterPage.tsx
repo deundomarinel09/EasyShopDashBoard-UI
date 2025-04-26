@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
+import { fetchCreateAccount } from "../api/userApi";
 import {
   Store,
   User,
@@ -8,12 +9,15 @@ import {
   Lock,
   Eye,
   EyeOff,
+  Phone,
   AlertCircle,
 } from "lucide-react";
 
 const RegisterPage = () => {
-  const [name, setName] = useState("");
+  const [firstname, setFirstname] = useState("");
+  const [lastname, setLastname] = useState("");
   const [email, setEmail] = useState("");
+  const [phonenumber, setPhonenumber] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -26,8 +30,7 @@ const RegisterPage = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Validate inputs
-    if (!name.trim() || !email.trim() || !password || !confirmPassword) {
+    if (!firstname.trim() || !lastname.trim() || !email.trim() || !phonenumber.trim() || !password || !confirmPassword) {
       setError("All fields are required");
       return;
     }
@@ -46,16 +49,25 @@ const RegisterPage = () => {
     setIsLoading(true);
 
     try {
-      const success = await register(name, email, password);
+      const payload = {
+        firstname,
+        lastname,
+        email,
+        phonenumber,
+        passwordhash: password,
+      };
 
-      if (success) {
-        navigate("/dashboard");
+      const response = await fetchCreateAccount(payload);
+
+      console.log("response",response);
+      if (response.success) {
+        navigate("/login", { state: { email } });
       } else {
-        setError("Email already exists or registration failed");
+        setError(response.message || "Registration failed");
       }
     } catch (err) {
+      console.error("Registration error:", err);
       setError("An error occurred. Please try again.");
-      console.error(err);
     } finally {
       setIsLoading(false);
     }
@@ -93,29 +105,47 @@ const RegisterPage = () => {
 
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           <div className="rounded-md shadow-sm -space-y-px">
+            {/* First Name */}
             <div className="relative">
-              <label htmlFor="name" className="sr-only">
-                Full name
-              </label>
+              <label htmlFor="firstname" className="sr-only">First Name</label>
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                 <User className="h-5 w-5 text-gray-400" />
               </div>
               <input
-                id="name"
-                name="name"
+                id="firstname"
+                name="firstname"
                 type="text"
-                autoComplete="name"
+                autoComplete="given-name"
                 required
                 className="appearance-none rounded-t-md relative block w-full px-3 py-3 pl-10 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10"
-                placeholder="Full name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
+                placeholder="First name"
+                value={firstname}
+                onChange={(e) => setFirstname(e.target.value)}
               />
             </div>
+
+            {/* Last Name */}
             <div className="relative">
-              <label htmlFor="email" className="sr-only">
-                Email address
-              </label>
+              <label htmlFor="lastname" className="sr-only">Last Name</label>
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <User className="h-5 w-5 text-gray-400" />
+              </div>
+              <input
+                id="lastname"
+                name="lastname"
+                type="text"
+                autoComplete="family-name"
+                required
+                className="appearance-none relative block w-full px-3 py-3 pl-10 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10"
+                placeholder="Last name"
+                value={lastname}
+                onChange={(e) => setLastname(e.target.value)}
+              />
+            </div>
+
+            {/* Email */}
+            <div className="relative">
+              <label htmlFor="email" className="sr-only">Email address</label>
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                 <Mail className="h-5 w-5 text-gray-400" />
               </div>
@@ -131,10 +161,29 @@ const RegisterPage = () => {
                 onChange={(e) => setEmail(e.target.value)}
               />
             </div>
+
+            {/* Phone Number */}
             <div className="relative">
-              <label htmlFor="password" className="sr-only">
-                Password
-              </label>
+              <label htmlFor="phonenumber" className="sr-only">Phone number</label>
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <Phone className="h-5 w-5 text-gray-400" />
+              </div>
+              <input
+                id="phonenumber"
+                name="phonenumber"
+                type="tel"
+                autoComplete="tel"
+                required
+                className="appearance-none relative block w-full px-3 py-3 pl-10 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10"
+                placeholder="Phone number"
+                value={phonenumber}
+                onChange={(e) => setPhonenumber(e.target.value)}
+              />
+            </div>
+
+            {/* Password */}
+            <div className="relative">
+              <label htmlFor="password" className="sr-only">Password</label>
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                 <Lock className="h-5 w-5 text-gray-400" />
               </div>
@@ -155,18 +204,14 @@ const RegisterPage = () => {
                   className="text-gray-400 hover:text-gray-600 focus:outline-none"
                   onClick={() => setShowPassword(!showPassword)}
                 >
-                  {showPassword ? (
-                    <EyeOff className="h-5 w-5" />
-                  ) : (
-                    <Eye className="h-5 w-5" />
-                  )}
+                  {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                 </button>
               </div>
             </div>
+
+            {/* Confirm Password */}
             <div className="relative">
-              <label htmlFor="confirm-password" className="sr-only">
-                Confirm password
-              </label>
+              <label htmlFor="confirm-password" className="sr-only">Confirm password</label>
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                 <Lock className="h-5 w-5 text-gray-400" />
               </div>

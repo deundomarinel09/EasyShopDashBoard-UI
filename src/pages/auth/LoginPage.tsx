@@ -2,12 +2,20 @@ import { useState } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
 import { Store, Eye, EyeOff, Mail, Lock, AlertCircle } from "lucide-react";
+import { fetchLogin } from "../api/userApi";
 
 type LocationState = {
   from?: {
     pathname: string;
   };
 };
+
+type LoginResponse = {
+  id: string;
+  message: string;
+  step?: string; // optional, because sometimes it might not be there
+};
+
 
 const LoginPage = () => {
   const [email, setEmail] = useState("");
@@ -16,7 +24,6 @@ const LoginPage = () => {
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
-  const { login } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -24,32 +31,39 @@ const LoginPage = () => {
   const from =
     (location.state as LocationState)?.from?.pathname || "/dashboard";
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (!email.trim() || !password.trim()) {
-      setError("Please enter both email and password");
-      return;
-    }
-
-    setError("");
-    setIsLoading(true);
-
-    try {
-      const success = await login(email, password);
-
-      if (success) {
-        navigate(from, { replace: true });
-      } else {
-        setError("Invalid email or password");
+    const handleSubmit = async (e: React.FormEvent) => {
+      e.preventDefault();
+    
+      if (!email.trim() || !password.trim()) {
+        setError("Please enter both email and password");
+        return;
       }
-    } catch (err) {
-      setError("An error occurred. Please try again.");
-      console.error(err);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+    
+      setError("");
+      setIsLoading(true);
+    
+      try {
+        const rawResponse = await fetchLogin({ email, passWord: password });
+        const response = rawResponse as LoginResponse; // <-- cast here
+        console.log("response", response);
+    
+        if (response.step === "otp") {
+          navigate("/otp", { 
+            replace: true, 
+            state: { email } 
+          });
+                  } else {
+          setError(response.message || "Invalid email or password");
+        }
+        
+      } catch (err) {
+        console.error("[LoginPage] error:", err);
+        setError("An error occurred. Please try again.");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col justify-center items-center p-4">
@@ -80,17 +94,6 @@ const LoginPage = () => {
             </div>
           </div>
         )}
-
-        {/* Demo credentials notice */}
-        <div className="bg-blue-50 border-l-4 border-blue-500 p-4 rounded">
-          <p className="text-sm text-blue-700">
-            <strong>Demo Credentials:</strong>
-            <br />
-            Email: admin@example.com
-            <br />
-            Password: admin123
-          </p>
-        </div>
 
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           <div className="rounded-md shadow-sm -space-y-px">

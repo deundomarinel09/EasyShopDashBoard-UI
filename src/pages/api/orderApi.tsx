@@ -13,7 +13,7 @@ return axios.post(`${baseUrl}${productEndPoint}`)
 };
 
 export const fetchOrderData = () => {
-  return axios.post(`${baseUrl}${orderEndPoint}`);
+  return axios.post(`${testUrl}${orderEndPoint}`);
 };
 
 export const fetchItemData = () => {

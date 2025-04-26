@@ -22,6 +22,8 @@ import {
 import StatCard from "./components/StatCard";
 import RecentOrdersTable from "./components/RecentOrdersTable";
 import TopSellingProducts from "./components/TopSellingProducts";
+import { fetchOrderData, updateOrderStatus, fetchItemData, fetchProductData } from "../api/orderApi";
+import { useState, useEffect, useRef } from "react";
 
 // Register ChartJS components
 ChartJS.register(
@@ -36,12 +38,53 @@ ChartJS.register(
   Legend,
 );
 
+type Order = {
+  id: string;
+  customer: string;
+  email: string;
+  date: string;
+  amount: number;
+  status: string;
+  items: Array<string>;
+  payment: string;
+};
+
 const DashboardPage = () => {
+
+    const [orders, setOrders] = useState<Order[]>([]);
+    const ordersRef = useRef<Order[]>([]);
+  
+    const fetchAndUpdateOrders = async () => {
+      try {
+        const response = await fetchOrderData();
+        const orderArray = response.data.$values;
+  
+        const newData = JSON.stringify(orderArray);
+        const currentData = JSON.stringify(ordersRef.current);
+  
+        if (newData !== currentData) {
+          setOrders(orderArray);
+          ordersRef.current = orderArray;
+        }
+      } catch (error: any) {
+        console.error(`Error fetching orders: ${error}`);
+      }
+    };
+
+      
+  const totalCompleted = orders.reduce(
+    (sum, order) => (order.status.toLowerCase() === "completed" ? sum + order.amount : sum),
+    0,
+  );
+
+  const totalOrdersCount = orders.length;
+
+  console.log("orders",orders);
   // Mock data for statistics
   const stats = [
     {
       title: "Total Revenue",
-      value: "₱ 24,895",
+      value: `₱ ${totalCompleted}`,
       change: 12.5,
       trend: "up",
       icon: DollarSign,
@@ -49,7 +92,7 @@ const DashboardPage = () => {
     },
     {
       title: "Orders",
-      value: "1,256",
+      value: `${totalOrdersCount}`,
       change: 8.2,
       trend: "up",
       icon: ShoppingCart,

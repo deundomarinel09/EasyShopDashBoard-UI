@@ -13,6 +13,7 @@ type User = {
   email: string;
   role: string;
   avatar?: string;
+  isOtpRequired?: boolean;
 };
 
 type AuthContextType = {
@@ -22,6 +23,7 @@ type AuthContextType = {
   login: (email: string, password: string) => Promise<boolean>;
   register: (name: string, email: string, password: string) => Promise<boolean>;
   logout: () => void;
+  setUser: (user: User | null) => void; // <-- Add this
 };
 
 // Create context with default values
@@ -32,32 +34,11 @@ const AuthContext = createContext<AuthContextType>({
   login: async () => false,
   register: async () => false,
   logout: () => {},
+  setUser: () => {}, // <-- Default empty function (to avoid errors)
 });
 
 // Custom hook to use the auth context
 export const useAuth = () => useContext(AuthContext);
-
-// Mock user data (would connect to API in production)
-const MOCK_USERS = [
-  {
-    id: "1",
-    name: "Admin User",
-    email: "admin@example.com",
-    password: "admin123",
-    role: "admin",
-    avatar:
-      "https://images.pexels.com/photos/5384445/pexels-photo-5384445.jpeg?auto=compress&cs=tinysrgb&w=150",
-  },
-  {
-    id: "2",
-    name: "Test User",
-    email: "user@example.com",
-    password: "user123",
-    role: "user",
-    avatar:
-      "https://images.pexels.com/photos/3763188/pexels-photo-3763188.jpeg?auto=compress&cs=tinysrgb&w=150",
-  },
-];
 
 // Provider component
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
@@ -75,19 +56,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   // Login function
   const login = async (email: string, password: string): Promise<boolean> => {
-    // Simulate API request delay
-    await new Promise((resolve) => setTimeout(resolve, 800));
+    await new Promise((resolve) => setTimeout(resolve, 800)); // Simulate delay
 
-    // Find user by email and password
-    const user = MOCK_USERS.find(
-      (u) =>
-        u.email.toLowerCase() === email.toLowerCase() &&
-        u.password === password,
-    );
-
-    if (user) {
-      // Remove password before storing user
-      const { password: _, ...userWithoutPassword } = user;
+    // In a real app, you would validate the user's credentials with an API
+    const storedUser = localStorage.getItem('user');
+    if (storedUser) {
+      const userWithoutPassword = JSON.parse(storedUser);
       setUser(userWithoutPassword);
       localStorage.setItem("user", JSON.stringify(userWithoutPassword));
       return true;
@@ -102,17 +76,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     email: string,
     password: string,
   ): Promise<boolean> => {
-    // Simulate API request delay
-    await new Promise((resolve) => setTimeout(resolve, 800));
-
-    // Check if email already exists
-    if (MOCK_USERS.some((u) => u.email.toLowerCase() === email.toLowerCase())) {
-      return false;
-    }
+    await new Promise((resolve) => setTimeout(resolve, 800)); // Simulate delay
 
     // In a real app, you would create a new user in your database
     const newUser = {
-      id: `${MOCK_USERS.length + 1}`,
+      id: `${Date.now()}`, // Simulating a unique ID based on time
       name,
       email,
       role: "user",
@@ -138,6 +106,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         login,
         register,
         logout,
+        setUser, // <-- Provide setUser
       }}
     >
       {children}

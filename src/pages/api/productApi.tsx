@@ -1,7 +1,7 @@
 // api/orderApi.js
 import axios from "axios";
 
-//const testUrl = "https://localhost:7066";
+const testUrl = "https://localhost:7066";
 const baseUrl = "https://mobileeasyshop.onrender.com"
 
 
