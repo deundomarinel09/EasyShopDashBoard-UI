@@ -37,7 +37,7 @@ const OrdersPage = () => {
       const productArray = response.data?.$values || response.data;
       setProducts(productArray);
     } catch (error: any) {
-      console.error(`Error fetching products: ${error}`);
+      alert(`Error fetching products: ${error}`);
 
     }
   };
@@ -48,7 +48,7 @@ const OrdersPage = () => {
       const itemArray = response.data?.$values || response.data;
       setItems(itemArray);
     } catch (error: any) {
-      console.error(`Error fetching items: ${error}`);
+      alert(`Error fetching items: ${error}`);
     }
   };
 
@@ -66,7 +66,7 @@ const OrdersPage = () => {
         ordersRef.current = orderArray;
       }
     } catch (error: any) {
-      console.error(`Error fetching orders: ${error}`);
+      alert(`Error fetching orders: ${error}`);
     }
   };
 
@@ -174,7 +174,7 @@ const OrdersPage = () => {
         alert("Order status updated successfully!");
         closeModal();
       } catch (error) {
-        console.error(`Failed to update order status: ${error}`);
+        alert(`Failed to update order status: ${error}`);
       }
     }
   };

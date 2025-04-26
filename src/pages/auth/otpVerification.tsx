@@ -33,7 +33,6 @@ export default function OtpVerification() {
 
     try {
       const res = await verifyOtp(passedEmail, otp);
-      console.log("Raw response from verifyOtp:", res);
 
       if (res?.message === "OTP verified") {
         const verifiedUser = res.user; // Extract the user data from the response
@@ -54,11 +53,11 @@ export default function OtpVerification() {
 
         navigate('/'); // Navigate to the home page or another page after success
       } else {
-        console.error("OTP verification failed:", res?.message);
+       alert(`OTP verification failed: ${res?.message}`);
         setError(res?.message || 'Invalid or expired OTP.');
       }
     } catch (err) {
-      console.error("Error during OTP verification:", err);
+      alert(`Error during OTP verification: ${err}`);
       setError('Something went wrong. Please try again.');
     }
 

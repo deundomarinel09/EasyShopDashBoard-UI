@@ -23,7 +23,6 @@ type Order = {
         "Status",
       ];
   
-      console.log("orders", orders);
     
       // Convert orders to CSV rows
       const rows = orders.map(order => [

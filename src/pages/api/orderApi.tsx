@@ -8,13 +8,22 @@ const itemsEndPoint = "/api/Dash/Items";
 const productEndPoint = "/api/Dash/GetAllProduct"
 const updateOrderStatusEndpoint = "/api/Dash/UpdateOrder"
 
+
+
 export const fetchProductData = () => {
 return axios.post(`${baseUrl}${productEndPoint}`)
 };
 
-export const fetchOrderData = () => {
-  return axios.post(`${testUrl}${orderEndPoint}`);
+export const fetchOrderData = async () => {
+  try {
+    const response = await axios.post(`${testUrl}${orderEndPoint}`);
+    return response;
+  } catch (error) {
+    alert(`Error in fetchOrderData: ${error}`);
+    throw error;
+  }
 };
+
 
 export const fetchItemData = () => {
   return axios.post(`${baseUrl}${itemsEndPoint}`);
@@ -33,7 +42,7 @@ export const updateOrderStatus = async (orderId: string, newStatus: string) => {
     if (!response.ok) throw new Error("Failed to update order status.");
     return await response.json();
   } catch (error) {
-    console.error(error);
+    alert(error);
     throw error;
   }
 };

@@ -109,7 +109,6 @@ const ReportsPage = () => {
 
       await generatePdf(reportTitle, period, summaryData, fileName);
     } catch (error) {
-      console.error("Error generating PDF:", error);
       alert("An error occurred while generating the report. Please try again.");
     } finally {
       setIsGenerating(false);

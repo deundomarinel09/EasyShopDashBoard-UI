@@ -59,14 +59,13 @@ const RegisterPage = () => {
 
       const response = await fetchCreateAccount(payload);
 
-      console.log("response",response);
       if (response.success) {
         navigate("/login", { state: { email } });
       } else {
         setError(response.message || "Registration failed");
       }
     } catch (err) {
-      console.error("Registration error:", err);
+      alert(`Registration error: ${err}`);
       setError("An error occurred. Please try again.");
     } finally {
       setIsLoading(false);

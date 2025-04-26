@@ -49,10 +49,19 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
     if (storedUser) {
-      setUser(JSON.parse(storedUser));
+      const parsedUser = JSON.parse(storedUser);
+  
+      // Defensive check: if user isOtpRequired, force logout or ask for otp again
+      if (parsedUser.isOtpRequired) {
+        setUser(null);
+        localStorage.removeItem("user");
+      } else {
+        setUser(parsedUser);
+      }
     }
     setIsLoading(false);
   }, []);
+  
 
   // Login function
   const login = async (email: string, password: string): Promise<boolean> => {

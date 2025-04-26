@@ -9,12 +9,13 @@ const signUpEndPoint = '/User/SignUpDash';
 const loginEndPoint = '/user/loginDash';
 const verifyOtpEndPoint = '/user/verify-otpDash';
 const resendOtpEndPoint = '/user/resend-otpDash';
-
+const GetAllUserCustomerEndPoint = '/user/GetAllUserCustomer';
 // Full URLs
 const signUpUrl = `${TESTBASE}${signUpEndPoint}`;
 const loginUrl = `${TESTBASE}${loginEndPoint}`;
 const verifyOtpUrl = `${TESTBASE}${verifyOtpEndPoint}`;
 const resendOtpUrl = `${TESTBASE}${resendOtpEndPoint}`;
+const getAllUserUrl = `${TESTBASE}${GetAllUserCustomerEndPoint}`;
 
 // Types
 interface ApiResponse<T = any> {
@@ -46,13 +47,18 @@ export interface SignUpPayload {
   }
   
 
+  export const fetchAllUsers = async (): Promise<any> => {
+    const res = await axios.post(getAllUserUrl);
+    return res.data;
+  };
+
+  
 // Verify OTP
 export const verifyOtp = async (email: string, otp: string): Promise<ApiResponse> => {
   try {
     const res = await axios.post<ApiResponse>(verifyOtpUrl, { email, otp });
     return res.data;
   } catch (err: any) {
-    console.error("[verifyOtp] error:", err.response?.data || err.message);
     if (err.response && err.response.data) {
       return err.response.data;
     }
@@ -72,7 +78,6 @@ export const resendOtp = async (email: string): Promise<ApiResponse> => {
     );
     return res.data;
   } catch (err: any) {
-    console.error("[resendOtp] error:", err.response?.data || err.message);
     if (err.response && err.response.data) {
       return err.response.data;
     }
@@ -92,7 +97,6 @@ export const fetchLogin = async (values: LoginPayload): Promise<ApiResponse> => 
 
 // Sign Up
 export const fetchCreateAccount = async (values: SignUpPayload): Promise<ApiResponse> => {
-    console.log("values",values);
   const res = await axios.post<ApiResponse>(signUpUrl, values);
   return res.data;
 };

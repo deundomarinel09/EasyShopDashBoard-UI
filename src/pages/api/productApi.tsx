@@ -52,7 +52,6 @@ export const fetchAddProductData = (formData: FormData) => {
 
 export const updateOrderStatus = async (orderId: string, newStatus: string) => {
   try {
-    console.log(`orderId: ${orderId}  newStatus: ${newStatus}`)
     const response = await fetch(`${baseUrl}${updateOrderStatusEndpoint}`, {
       method: "POST",
       headers: {
@@ -64,7 +63,7 @@ export const updateOrderStatus = async (orderId: string, newStatus: string) => {
     if (!response.ok) throw new Error("Failed to update order status.");
     return await response.json();
   } catch (error) {
-    console.error(error);
+    alert(error);
     throw error;
   }
 };

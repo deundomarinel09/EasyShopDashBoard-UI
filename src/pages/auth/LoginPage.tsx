@@ -45,7 +45,6 @@ const LoginPage = () => {
       try {
         const rawResponse = await fetchLogin({ email, passWord: password });
         const response = rawResponse as LoginResponse; // <-- cast here
-        console.log("response", response);
     
         if (response.step === "otp") {
           navigate("/otp", { 
@@ -57,7 +56,7 @@ const LoginPage = () => {
         }
         
       } catch (err) {
-        console.error("[LoginPage] error:", err);
+        alert(`[LoginPage] error: ${err}`);
         setError("An error occurred. Please try again.");
       } finally {
         setIsLoading(false);
