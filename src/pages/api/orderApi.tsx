@@ -16,7 +16,7 @@ return axios.post(`${baseUrl}${productEndPoint}`)
 
 export const fetchOrderData = async () => {
   try {
-    const response = await axios.post(`${testUrl}${orderEndPoint}`);
+    const response = await axios.post(`${baseUrl}${orderEndPoint}`);
     return response;
   } catch (error) {
     alert(`Error in fetchOrderData: ${error}`);

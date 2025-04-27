@@ -18,12 +18,10 @@ const TopSellingProducts = () => {
         // Fetch all product details
         const productResponse = await fetchListProductData();
         const products = productResponse.data?.$values || []; // List of all products
-        console.log("Products:", products);  // Log products to check if fetched correctly
 
         // Fetch order items (the 'values' array inside the response)
         const itemResponse = await fetchItemData();
         const items = itemResponse.data?.$values || []; // Accessing the '$values' array
-        console.log("Order Items:", items); // Log items to verify their structure
 
         // Calculate total sales for each product based on productId and quantity
         const productSales = items.reduce((acc: any, item: any) => {
@@ -34,7 +32,6 @@ const TopSellingProducts = () => {
           acc[productId].count += item.quantity; // Assuming item.quantity is the quantity sold
           return acc;
         }, {});
-        console.log("Product Sales:", productSales);  // Log sales calculation
 
         // Map the sales data with the product details
         const topSellingProducts = Object.values(productSales).map((salesData: any) => {
@@ -46,7 +43,6 @@ const TopSellingProducts = () => {
             price: product?.price || 0,
           };
         });
-        console.log("Mapped Top Selling Products:", topSellingProducts);  // Log mapped data
 
         // Sort products by sales count in descending order and limit to top 5
         topSellingProducts.sort((a: any, b: any) => b.count - a.count);

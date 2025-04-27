@@ -93,7 +93,6 @@ const UsersPage = () => {
   
 
   const handleSaveUser = async (userData: Partial<User>) => {
-    console.log("Sending user data:", userData);
 
     if (currentUser) {
       // Update existing user
@@ -106,7 +105,6 @@ const UsersPage = () => {
       // Create new user
       try {
         const newUserData = await fetchCreateAccount(userData); // Call the API to create user
-        console.log("newUserData", newUserData);
 
         // Check if the response indicates success
         if (newUserData?.success) {
@@ -124,12 +122,10 @@ const UsersPage = () => {
           setUsers((prevUsers) => [...prevUsers, newUser]);
         } else {
           // Handle the error response from the API
-          console.error("Error creating user:", newUserData.message || "Unknown error");
           alert("Failed to create user. " + (newUserData?.message || "Please try again."));
         }
       } catch (error) {
         // This handles network or unexpected errors
-        console.error("Error:", error);
         alert("Failed to create user. Please try again.");
       }
     }
