@@ -1,15 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import {
-  Plus,
-  Search,
-  Filter,
-  Package,
-  Grid,
-  List,
-} from "lucide-react";
-
-import { fetchListProductData } from "../api/productApi";
+import { Plus, Search, Filter, Package, Grid, List } from "lucide-react";
+import { fetchListProductData, fetchDeleteProductData } from "../api/productApi";
 import ProductCard from "./components/ProductCard";
 import ProductListItem from "./components/ProductListItem";
 
@@ -64,11 +56,17 @@ const ProductsPage = () => {
     return matchesSearch && matchesCategory && matchesStatus;
   });
 
-  const handleDeleteProduct = (productId: number) => {
+  const handleDeleteProduct = async (productId: number) => {
     if (window.confirm("Are you sure you want to delete this product?")) {
-      setProducts(products.filter((product) => product.id !== productId));
+      try {
+        await fetchDeleteProductData(productId); // Call API to delete the product
+        setProducts(products.filter((product) => product.id !== productId)); // Update state to remove product
+      } catch (error: any) {
+        alert(`Error deleting product: ${error.message}`);
+      }
     }
   };
+  
 
   return (
     <div className="space-y-6">
@@ -214,6 +212,5 @@ const ProductsPage = () => {
     </div>
   );
 };
-
 
 export default ProductsPage;

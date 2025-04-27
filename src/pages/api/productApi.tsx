@@ -7,7 +7,8 @@ const baseUrl = "https://mobileeasyshop.onrender.com"
 
 
 const itemsEndPoint = "/api/Dash/Items";
-const updateOrderStatusEndpoint = "/api/Dash/UpdateOrder"
+const updateOrderStatusEndpoint = "/api/Dash/UpdateOrder";
+const deleteProductEndpoint = "/api/Product/DeleteProduct";
 
 
 
@@ -16,6 +17,12 @@ const listCategories = "/api/Dash/GetAllCategories";
 const productById = "/api/Dash/GetProductById";
 const updateProduct = "/api/Dash/UpdateProduct";
 const addProduct = "/api/Dash/AddProduct";
+
+export const fetchDeleteProductData = (productId: number) => {
+  return axios.post(`${baseUrl}${deleteProductEndpoint}`, { id: productId }); // Send id in the body
+};
+
+
 
 export const fetchListProductData = () => {
 return axios.post(`${baseUrl}${listProductEndpoint}`)
