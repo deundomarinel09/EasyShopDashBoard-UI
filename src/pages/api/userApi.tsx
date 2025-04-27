@@ -15,13 +15,13 @@ const DeleteUserDashEndPoint = '/user/DeleteUserDash';
 
 
 // Full URLs
-const signUpUrl = `${TESTBASE}${signUpEndPoint}`;
-const loginUrl = `${TESTBASE}${loginEndPoint}`;
-const verifyOtpUrl = `${TESTBASE}${verifyOtpEndPoint}`;
-const resendOtpUrl = `${TESTBASE}${resendOtpEndPoint}`;
-const getAllUserUrl = `${TESTBASE}${GetAllUserCustomerEndPoint}`;
-const getAllUserDash = `${TESTBASE}${GetAllUserDashEndPoint}`;
-const DeleteUserDash = `${TESTBASE}${DeleteUserDashEndPoint}`;
+const signUpUrl = `${BASE}${signUpEndPoint}`;
+const loginUrl = `${BASE}${loginEndPoint}`;
+const verifyOtpUrl = `${BASE}${verifyOtpEndPoint}`;
+const resendOtpUrl = `${BASE}${resendOtpEndPoint}`;
+const getAllUserUrl = `${BASE}${GetAllUserCustomerEndPoint}`;
+const getAllUserDash = `${BASE}${GetAllUserDashEndPoint}`;
+const DeleteUserDash = `${BASE}${DeleteUserDashEndPoint}`;
 
 
 // Types
