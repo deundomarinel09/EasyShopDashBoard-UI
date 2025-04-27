@@ -1,100 +1,67 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Plus,
   Search,
   Edit,
   Trash,
   Filter,
-  MoreHorizontal,
-  UserCog,
 } from "lucide-react";
 import UserModal from "./components/UserModal";
+import { fetchUsersDash, deleteUserDash, fetchCreateAccount } from "../api/userApi";
 
-// Mock user data
-const initialUsers = [
-  {
-    id: "1",
-    name: "John Smith",
-    email: "john.smith@example.com",
-    role: "Admin",
-    status: "Active",
-    lastLogin: "2025-02-15 09:23 AM",
-    avatar:
-      "https://images.pexels.com/photos/2379005/pexels-photo-2379005.jpeg?auto=compress&cs=tinysrgb&w=100",
-  },
-  {
-    id: "2",
-    name: "Sarah Johnson",
-    email: "sarah.j@example.com",
-    role: "Manager",
-    status: "Active",
-    lastLogin: "2025-02-14 02:35 PM",
-    avatar:
-      "https://images.pexels.com/photos/3681591/pexels-photo-3681591.jpeg?auto=compress&cs=tinysrgb&w=100",
-  },
-  {
-    id: "3",
-    name: "Michael Brown",
-    email: "michael.b@example.com",
-    role: "Staff",
-    status: "Active",
-    lastLogin: "2025-02-14 11:17 AM",
-    avatar:
-      "https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=100",
-  },
-  {
-    id: "4",
-    name: "Emily Davis",
-    email: "emily.d@example.com",
-    role: "Staff",
-    status: "Inactive",
-    lastLogin: "2025-02-09 04:45 PM",
-    avatar:
-      "https://images.pexels.com/photos/1520760/pexels-photo-1520760.jpeg?auto=compress&cs=tinysrgb&w=100",
-  },
-  {
-    id: "5",
-    name: "David Wilson",
-    email: "david.w@example.com",
-    role: "Staff",
-    status: "Active",
-    lastLogin: "2025-02-13 10:30 AM",
-    avatar:
-      "https://images.pexels.com/photos/614810/pexels-photo-614810.jpeg?auto=compress&cs=tinysrgb&w=100",
-  },
-  {
-    id: "6",
-    name: "Jennifer Taylor",
-    email: "jennifer.t@example.com",
-    role: "Manager",
-    status: "Active",
-    lastLogin: "2025-02-12 08:15 AM",
-    avatar:
-      "https://images.pexels.com/photos/1239291/pexels-photo-1239291.jpeg?auto=compress&cs=tinysrgb&w=100",
-  },
-  {
-    id: "7",
-    name: "Robert Martinez",
-    email: "robert.m@example.com",
-    role: "Staff",
-    status: "Suspended",
-    lastLogin: "2025-02-01 03:22 PM",
-    avatar: "",
-  },
-];
+// Define User type
+type User = {
+  id: string;
+  firstname: string;
+  lastname: string;
+  phoneNumber: string;
+  email: string;
+  role: "Admin" | "Manager" | "Staff";
+  status: "Active" | "Inactive" | "Suspended";
+  lastLogin: string;
+  avatar?: string;
+};
 
 const UsersPage = () => {
-  const [users, setUsers] = useState(initialUsers);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [selectedRole, setSelectedRole] = useState("All");
-  const [selectedStatus, setSelectedStatus] = useState("All");
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [currentUser, setCurrentUser] = useState<any>(null);
+  const [users, setUsers] = useState<User[]>([]);
+  const [searchTerm, setSearchTerm] = useState<string>("");
+  const [selectedRole, setSelectedRole] = useState<string>("All");
+  const [selectedStatus, setSelectedStatus] = useState<string>("All");
+  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
 
-  // Filter users based on search term and filters
+  // Fetch users (replace mock data later with API)
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const usersFromAPI = await fetchUsersDash();
+
+        const rawUsers = Array.isArray((usersFromAPI as any)?.$values) ? (usersFromAPI as any).$values : [];
+
+        const formattedUsers = rawUsers.map((user: any) => ({
+          id: user.id.toString(),
+          firstname: user.firstname,
+          lastname: user.lastname,
+          email: user.email,
+          role: user.role,
+          lastLogin: "-",    // or map last login if available
+          avatar: "",        // if you have an avatar field, set it here
+        }));
+
+        setUsers(formattedUsers);
+      } catch (error) {
+       alert(`Error fetching users: ${error}`);
+      }
+    };
+
+    fetchData();
+  }, []);
+  
+
   const filteredUsers = users.filter((user) => {
     const matchesSearch =
-      user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.firstname.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.lastname.toLowerCase().includes(searchTerm.toLowerCase()) ||
       user.email.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesRole = selectedRole === "All" || user.role === selectedRole;
     const matchesStatus =
@@ -108,38 +75,69 @@ const UsersPage = () => {
     setIsModalOpen(true);
   };
 
-  const handleEditUser = (user: any) => {
+  const handleEditUser = (user: User) => {
     setCurrentUser(user);
     setIsModalOpen(true);
   };
 
-  const handleDeleteUser = (userId: string) => {
+  const handleDeleteUser = async (userId: string) => {
     if (window.confirm("Are you sure you want to delete this user?")) {
-      setUsers(users.filter((user) => user.id !== userId));
+      try {
+        await deleteUserDash(Number(userId));
+        setUsers((prevUsers) => prevUsers.filter((user) => user.id !== userId));
+      } catch (error) {
+        alert("Failed to delete user. Please try again."); // optional: show error
+      }
     }
   };
+  
 
-  const handleSaveUser = (userData: any) => {
+  const handleSaveUser = async (userData: Partial<User>) => {
+    console.log("Sending user data:", userData);
+
     if (currentUser) {
       // Update existing user
-      setUsers(
-        users.map((user) =>
-          user.id === currentUser.id ? { ...user, ...userData } : user,
-        ),
+      setUsers((prevUsers) =>
+        prevUsers.map((user) =>
+          user.id === currentUser.id ? { ...user, ...userData } : user
+        )
       );
     } else {
-      // Add new user
-      const newUser = {
-        id: (users.length + 1).toString(),
-        ...userData,
-        lastLogin: "-",
-      };
-      setUsers([...users, newUser]);
+      // Create new user
+      try {
+        const newUserData = await fetchCreateAccount(userData); // Call the API to create user
+        console.log("newUserData", newUserData);
+
+        // Check if the response indicates success
+        if (newUserData?.success) {
+          const newUser: User = {
+            id: newUserData.user.id,
+            firstname: userData.firstname || "",
+            lastname: userData.lastname || "",
+            email: userData.email || "",
+            role: (userData.role as User["role"]) || "Staff",
+            status: (userData.status as User["status"]) || "Active",
+            avatar: userData.avatar || "",
+            lastLogin: "-",
+          };
+
+          setUsers((prevUsers) => [...prevUsers, newUser]);
+        } else {
+          // Handle the error response from the API
+          console.error("Error creating user:", newUserData.message || "Unknown error");
+          alert("Failed to create user. " + (newUserData?.message || "Please try again."));
+        }
+      } catch (error) {
+        // This handles network or unexpected errors
+        console.error("Error:", error);
+        alert("Failed to create user. Please try again.");
+      }
     }
     setIsModalOpen(false);
   };
 
-  const getStatusColor = (status: string) => {
+
+  const getStatusColor = (status: User["status"]) => {
     switch (status) {
       case "Active":
         return "bg-green-100 text-green-800";
@@ -154,6 +152,7 @@ const UsersPage = () => {
 
   return (
     <div className="space-y-6">
+      {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-3 sm:space-y-0">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">User Management</h1>
@@ -183,6 +182,7 @@ const UsersPage = () => {
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
+
           <div className="flex flex-col sm:flex-row sm:items-center space-y-3 sm:space-y-0 sm:space-x-4">
             <div className="flex items-center space-x-2">
               <Filter className="h-5 w-5 text-gray-400" />
@@ -197,16 +197,6 @@ const UsersPage = () => {
                 <option value="Staff">Staff</option>
               </select>
             </div>
-            <select
-              className="border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              value={selectedStatus}
-              onChange={(e) => setSelectedStatus(e.target.value)}
-            >
-              <option value="All">All Status</option>
-              <option value="Active">Active</option>
-              <option value="Inactive">Inactive</option>
-              <option value="Suspended">Suspended</option>
-            </select>
           </div>
         </div>
       </div>
@@ -217,45 +207,15 @@ const UsersPage = () => {
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
-                <th
-                  scope="col"
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                >
-                  User
-                </th>
-                <th
-                  scope="col"
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                >
-                  Role
-                </th>
-                <th
-                  scope="col"
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                >
-                  Status
-                </th>
-                <th
-                  scope="col"
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                >
-                  Last Login
-                </th>
-                <th
-                  scope="col"
-                  className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
-                >
-                  Actions
-                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role</th>
+                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {filteredUsers.length > 0 ? (
                 filteredUsers.map((user) => (
-                  <tr
-                    key={user.id}
-                    className="hover:bg-gray-50 transition-colors duration-150"
-                  >
+                  <tr key={user.id} className="hover:bg-gray-50 transition-colors duration-150">
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
                         <div className="flex-shrink-0 h-10 w-10">
@@ -263,51 +223,31 @@ const UsersPage = () => {
                             <img
                               className="h-10 w-10 rounded-full object-cover"
                               src={user.avatar}
-                              alt={`${user.name}'s avatar`}
+                              alt={`${user.firstname}'s avatar`}
                             />
                           ) : (
                             <div className="h-10 w-10 rounded-full bg-blue-500 flex items-center justify-center text-white font-medium">
-                              {user?.name?.charAt(0).toUpperCase()}
+                              {`${user.firstname.charAt(0).toUpperCase()}${user.lastname.charAt(0).toUpperCase()}`}
                             </div>
                           )}
                         </div>
                         <div className="ml-4">
                           <div className="text-sm font-medium text-gray-900">
-                            {user.name}
+                            {`${user.firstname} ${user.lastname}`}
                           </div>
-                          <div className="text-sm text-gray-500">
-                            {user.email}
-                          </div>
+                          <div className="text-sm text-gray-500">{user.email}</div>
                         </div>
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm text-gray-900">{user.role}</div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span
-                        className={`px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusColor(user.status)}`}
-                      >
-                        {user.status}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {user.lastLogin}
-                    </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <div className="flex items-center justify-end space-x-3">
-                        <button
-                          onClick={() => handleEditUser(user)}
-                          className="text-blue-600 hover:text-blue-900"
-                          aria-label="Edit user"
-                        >
+                        <button onClick={() => handleEditUser(user)} className="text-blue-600 hover:text-blue-900">
                           <Edit className="h-5 w-5" />
                         </button>
-                        <button
-                          onClick={() => handleDeleteUser(user.id)}
-                          className="text-red-600 hover:text-red-900"
-                          aria-label="Delete user"
-                        >
+                        <button onClick={() => handleDeleteUser(user.id)} className="text-red-600 hover:text-red-900">
                           <Trash className="h-5 w-5" />
                         </button>
                       </div>
@@ -316,31 +256,13 @@ const UsersPage = () => {
                 ))
               ) : (
                 <tr>
-                  <td
-                    colSpan={5}
-                    className="px-6 py-4 text-center text-sm text-gray-500"
-                  >
+                  <td colSpan={5} className="px-6 py-4 text-center text-sm text-gray-500">
                     No users found matching your search criteria
                   </td>
                 </tr>
               )}
             </tbody>
           </table>
-        </div>
-        <div className="bg-gray-50 px-6 py-3 flex items-center justify-between border-t border-gray-200">
-          <div className="text-sm text-gray-700">
-            Showing <span className="font-medium">{filteredUsers.length}</span>{" "}
-            of <span className="font-medium">{users.length}</span> users
-          </div>
-          <div className="flex-1 flex justify-end">
-            <button
-              type="button"
-              className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-            >
-              <UserCog className="h-4 w-4 mr-2" />
-              User Permissions
-            </button>
-          </div>
         </div>
       </div>
 

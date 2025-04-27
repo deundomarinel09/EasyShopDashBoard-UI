@@ -22,3 +22,6 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+/.vs/slnx.sqlite
+/.vs/EasyShopDashBoard/v17/.wsuo
+/.vs/EasyShopDashBoard/FileContentIndex/68939071-c4b6-4aca-8bba-3b7bc26bcee7.vsidx

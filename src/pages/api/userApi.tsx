@@ -10,12 +10,19 @@ const loginEndPoint = '/user/loginDash';
 const verifyOtpEndPoint = '/user/verify-otpDash';
 const resendOtpEndPoint = '/user/resend-otpDash';
 const GetAllUserCustomerEndPoint = '/user/GetAllUserCustomer';
+const GetAllUserDashEndPoint = '/user/GetAllUserDash';
+const DeleteUserDashEndPoint = '/user/DeleteUserDash';
+
+
 // Full URLs
 const signUpUrl = `${TESTBASE}${signUpEndPoint}`;
 const loginUrl = `${TESTBASE}${loginEndPoint}`;
 const verifyOtpUrl = `${TESTBASE}${verifyOtpEndPoint}`;
 const resendOtpUrl = `${TESTBASE}${resendOtpEndPoint}`;
 const getAllUserUrl = `${TESTBASE}${GetAllUserCustomerEndPoint}`;
+const getAllUserDash = `${TESTBASE}${GetAllUserDashEndPoint}`;
+const DeleteUserDash = `${TESTBASE}${DeleteUserDashEndPoint}`;
+
 
 // Types
 interface ApiResponse<T = any> {
@@ -42,6 +49,7 @@ export interface SignUpPayload {
     firstname: string;
     lastname: string;
     email: string;
+    role: string;
     phonenumber: string;
     passwordhash: string; 
   }
@@ -107,8 +115,17 @@ export const fetchUsers = async (): Promise<ApiResponse> => {
   return res.data;
 };
 
+export const fetchUsersDash = async (): Promise<ApiResponse> => {
+  const res = await axios.post<ApiResponse>(`${getAllUserDash}`);
+  return res.data;
+};
+
 // Fetch All Products
 export const fetchProducts = async (): Promise<ApiResponse> => {
   const res = await axios.get<ApiResponse>(`${BASE}/product`);
   return res.data;
+};
+
+export const deleteUserDash = async (userId: number) => {
+  return await axios.delete(`${DeleteUserDash}/${userId}`);
 };

@@ -10,11 +10,12 @@ type UserModalProps = {
 
 const UserModal = ({ isOpen, onClose, onSave, user }: UserModalProps) => {
   const [formData, setFormData] = useState({
-    name: "",
+    firstname: "",
+    lastname: "",
     email: "",
     role: "Staff",
-    status: "Active",
-    password: "",
+    phonenumber: "",
+    passwordhash: "",
     confirmPassword: "",
   });
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
@@ -22,20 +23,22 @@ const UserModal = ({ isOpen, onClose, onSave, user }: UserModalProps) => {
   useEffect(() => {
     if (user) {
       setFormData({
-        name: user.name || "",
+        firstname: user.firstname || "",
+        lastname: user.lastname || "",
         email: user.email || "",
         role: user.role || "Staff",
-        status: user.status || "Active",
-        password: "",
+        phonenumber: user.phonenumber || "",
+        passwordhash: "", // Keep it empty when editing, since we don't want to overwrite the password
         confirmPassword: "",
       });
     } else {
       setFormData({
-        name: "",
+        firstname: "",
+        lastname: "",
         email: "",
         role: "Staff",
-        status: "Active",
-        password: "",
+        phonenumber: "",
+        passwordhash: "",
         confirmPassword: "",
       });
     }
@@ -43,7 +46,7 @@ const UserModal = ({ isOpen, onClose, onSave, user }: UserModalProps) => {
   }, [user, isOpen]);
 
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
@@ -61,8 +64,12 @@ const UserModal = ({ isOpen, onClose, onSave, user }: UserModalProps) => {
   const validateForm = () => {
     const newErrors: { [key: string]: string } = {};
 
-    if (!formData.name.trim()) {
-      newErrors.name = "Name is required";
+    if (!formData.firstname.trim()) {
+      newErrors.firstname = "First name is required";
+    }
+
+    if (!formData.lastname.trim()) {
+      newErrors.lastname = "Last name is required";
     }
 
     if (!formData.email.trim()) {
@@ -71,15 +78,21 @@ const UserModal = ({ isOpen, onClose, onSave, user }: UserModalProps) => {
       newErrors.email = "Email is invalid";
     }
 
+    if (!formData.phonenumber.trim()) {
+      newErrors.phonenumber = "Phone number is required";
+    } else if (!/^\d{11}$/.test(formData.phonenumber)) {
+      newErrors.phonenumber = "Phone number must be 11 digits";
+    }
+
     // Only validate password for new users or if password field is not empty
-    if (!user || formData.password) {
-      if (!user && !formData.password) {
-        newErrors.password = "Password is required for new users";
-      } else if (formData.password.length < 6) {
-        newErrors.password = "Password must be at least 6 characters";
+    if (!user || formData.passwordhash) {
+      if (!user && !formData.passwordhash) {
+        newErrors.passwordhash = "Password is required for new users";
+      } else if (formData.passwordhash.length < 6) {
+        newErrors.passwordhash = "Password must be at least 6 characters";
       }
 
-      if (formData.password !== formData.confirmPassword) {
+      if (formData.passwordhash !== formData.confirmPassword) {
         newErrors.confirmPassword = "Passwords do not match";
       }
     }
@@ -89,18 +102,24 @@ const UserModal = ({ isOpen, onClose, onSave, user }: UserModalProps) => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-
+  
     const newErrors = validateForm();
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
       return;
     }
-
-    // Remove confirmPassword before saving
+  
+    // Ensure confirmPassword is not sent
     const { confirmPassword, ...userData } = formData;
-    onSave(userData);
+  
+    // Only include password if it's not empty (for new users or if password is updated)
+    if (!user && formData.passwordhash) {
+      userData.passwordhash = formData.passwordhash;
+    }
+  
+    onSave(userData);  // Pass the user data to the parent for saving
   };
-
+  
   if (!isOpen) return null;
 
   return (
@@ -134,25 +153,49 @@ const UserModal = ({ isOpen, onClose, onSave, user }: UserModalProps) => {
             <div className="space-y-4">
               <div>
                 <label
-                  htmlFor="name"
+                  htmlFor="firstname"
                   className="block text-sm font-medium text-gray-700"
                 >
-                  Full Name
+                  First Name
                 </label>
                 <input
                   type="text"
-                  name="name"
-                  id="name"
-                  value={formData.name}
+                  name="firstname"
+                  id="firstname"
+                  value={formData.firstname}
                   onChange={handleChange}
                   className={`mt-1 block w-full rounded-md shadow-sm ${
-                    errors.name
+                    errors.firstname
                       ? "border-red-300 focus:ring-red-500 focus:border-red-500"
                       : "border-gray-300 focus:ring-blue-500 focus:border-blue-500"
                   }`}
                 />
-                {errors.name && (
-                  <p className="mt-1 text-sm text-red-600">{errors.name}</p>
+                {errors.firstname && (
+                  <p className="mt-1 text-sm text-red-600">{errors.firstname}</p>
+                )}
+              </div>
+
+              <div>
+                <label
+                  htmlFor="lastname"
+                  className="block text-sm font-medium text-gray-700"
+                >
+                  Last Name
+                </label>
+                <input
+                  type="text"
+                  name="lastname"
+                  id="lastname"
+                  value={formData.lastname}
+                  onChange={handleChange}
+                  className={`mt-1 block w-full rounded-md shadow-sm ${
+                    errors.lastname
+                      ? "border-red-300 focus:ring-red-500 focus:border-red-500"
+                      : "border-gray-300 focus:ring-blue-500 focus:border-blue-500"
+                  }`}
+                />
+                {errors.lastname && (
+                  <p className="mt-1 text-sm text-red-600">{errors.lastname}</p>
                 )}
               </div>
 
@@ -180,6 +223,30 @@ const UserModal = ({ isOpen, onClose, onSave, user }: UserModalProps) => {
                 )}
               </div>
 
+              <div>
+                <label
+                  htmlFor="phonenumber"
+                  className="block text-sm font-medium text-gray-700"
+                >
+                  Phone Number
+                </label>
+                <input
+                  type="text"
+                  name="phonenumber"
+                  id="phonenumber"
+                  value={formData.phonenumber}
+                  onChange={handleChange}
+                  className={`mt-1 block w-full rounded-md shadow-sm ${
+                    errors.phonenumber
+                      ? "border-red-300 focus:ring-red-500 focus:border-red-500"
+                      : "border-gray-300 focus:ring-blue-500 focus:border-blue-500"
+                  }`}
+                />
+                {errors.phonenumber && (
+                  <p className="mt-1 text-sm text-red-600">{errors.phonenumber}</p>
+                )}
+              </div>
+
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div>
                   <label
@@ -200,26 +267,6 @@ const UserModal = ({ isOpen, onClose, onSave, user }: UserModalProps) => {
                     <option value="Staff">Staff</option>
                   </select>
                 </div>
-
-                <div>
-                  <label
-                    htmlFor="status"
-                    className="block text-sm font-medium text-gray-700"
-                  >
-                    Status
-                  </label>
-                  <select
-                    id="status"
-                    name="status"
-                    value={formData.status}
-                    onChange={handleChange}
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500"
-                  >
-                    <option value="Active">Active</option>
-                    <option value="Inactive">Inactive</option>
-                    <option value="Suspended">Suspended</option>
-                  </select>
-                </div>
               </div>
 
               <div>
@@ -233,18 +280,18 @@ const UserModal = ({ isOpen, onClose, onSave, user }: UserModalProps) => {
                 </label>
                 <input
                   type="password"
-                  name="password"
+                  name="passwordhash"
                   id="password"
-                  value={formData.password}
+                  value={formData.passwordhash}
                   onChange={handleChange}
                   className={`mt-1 block w-full rounded-md shadow-sm ${
-                    errors.password
+                    errors.passwordhash
                       ? "border-red-300 focus:ring-red-500 focus:border-red-500"
                       : "border-gray-300 focus:ring-blue-500 focus:border-blue-500"
                   }`}
                 />
-                {errors.password && (
-                  <p className="mt-1 text-sm text-red-600">{errors.password}</p>
+                {errors.passwordhash && (
+                  <p className="mt-1 text-sm text-red-600">{errors.passwordhash}</p>
                 )}
               </div>
 
