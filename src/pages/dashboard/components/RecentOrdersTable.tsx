@@ -131,12 +131,6 @@ const RecentOrdersTable = () => {
               >
                 Status
               </th>
-              <th
-                scope="col"
-                className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
-              >
-                Actions
-              </th>
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
@@ -168,12 +162,6 @@ const RecentOrdersTable = () => {
                   >
                     {order.status}
                   </span>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                  <button className="text-blue-600 hover:text-blue-900 flex items-center justify-end space-x-1">
-                    <Eye className="h-4 w-4" />
-                    <span>View</span>
-                  </button>
                 </td>
               </tr>
             ))}
