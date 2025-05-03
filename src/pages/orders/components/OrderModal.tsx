@@ -7,7 +7,7 @@ interface OrderModalProps {
   updatedStatus: string;
   statusOptions: string[];
   handleStatusChange: (e: React.ChangeEvent<HTMLSelectElement>) => void;
-  handleSave: () => void;
+  handleSave: (shippingFee: number | "") => void;
   closeModal: () => void;
   items: any[];
   products: any[];
@@ -25,6 +25,8 @@ const OrderModal: React.FC<OrderModalProps> = ({
   products,
 }) => {
   const [localStatus, setLocalStatus] = useState("");
+  const [shippingFee, setShippingFee] = useState<number | "">("");
+
 
   useEffect(() => {
     if (selectedOrder) {
@@ -87,18 +89,43 @@ const OrderModal: React.FC<OrderModalProps> = ({
                 >
                   Update Status
                 </label>
-                <select
-                  id="status"
-                  value={localStatus}
-                  onChange={(e) => setLocalStatus(e.target.value)}
-                  className="block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                >
-                  {statusOptions.map((status) => (
-                    <option key={status} value={status}>
-                      {status}
-                    </option>
-                  ))}
-                </select>
+                {localStatus === "Cancelled" ? (
+  <p className="text-sm font-semibold text-red-600">Cancelled</p>
+) : (
+  <select
+    id="status"
+    value={localStatus}
+    onChange={(e) => setLocalStatus(e.target.value)}
+    className="block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+  >
+    {statusOptions
+      .filter((status) => status !== "Cancelled")
+      .map((status) => (
+        <option key={status} value={status}>
+          {status}
+        </option>
+      ))}
+  </select>
+)}
+{localStatus === "Processing" && (
+  <div className="mt-4">
+    <label
+      htmlFor="shippingFee"
+      className="block text-sm font-medium text-gray-700 mb-1"
+    >
+      Shipping Fee (₱)
+    </label>
+    <input
+      type="number"
+      id="shippingFee"
+      value={shippingFee}
+      onChange={(e) => setShippingFee(parseFloat(e.target.value))}
+      className="block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+      min="0"
+      step="0.01"
+    />
+  </div>
+)}
               </div>
 
               {/* Items Table */}
@@ -181,7 +208,7 @@ const OrderModal: React.FC<OrderModalProps> = ({
 
                 <button
                   className="w-full sm:w-auto px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition"
-                  onClick={handleSave}
+                  onClick={() => handleSave(shippingFee)}
                 >
                   Save
                 </button>

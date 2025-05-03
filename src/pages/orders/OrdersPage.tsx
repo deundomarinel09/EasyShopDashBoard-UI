@@ -159,26 +159,24 @@ const OrdersPage = () => {
     setUpdatedStatus(e.target.value);
   };
 
-  const handleSave = async () => {
+  const handleSave = async (shippingFee: number | "") => {
     if (selectedOrder) {
       try {
-
-        const statusToSave = !updatedStatus || updatedStatus === selectedOrder.status
-        ? selectedOrder.status
-        : updatedStatus;
-      
-        // Call your updateOrderStatus function here
-        await updateOrderStatus(selectedOrder.id, statusToSave);
-
-        // After successfully updating the status, you can close the modal and reset states
-        alert("Order status updated successfully!");
+        const statusToSave =
+          !updatedStatus || updatedStatus === selectedOrder.status
+            ? selectedOrder.status
+            : updatedStatus;
+  
+        await updateOrderStatus(selectedOrder.id, statusToSave, shippingFee);
+  
+        alert("Order updated successfully!");
         closeModal();
       } catch (error) {
-        alert(`Failed to update order status: ${error}`);
+        alert(`Failed to update order: ${error}`);
       }
     }
   };
-
+  
   const handleExport = () => {
     exportToCSV(filteredOrders); // Call the export function with the filtered orders
   };

@@ -29,14 +29,22 @@ export const fetchItemData = () => {
   return axios.post(`${baseUrl}${itemsEndPoint}`);
 };
 
-export const updateOrderStatus = async (orderId: string, newStatus: string) => {
+export const updateOrderStatus = async (
+  orderId: string,
+  newStatus: string,
+  shippingFee?: number | ""
+) => {
   try {
-    const response = await fetch(`${baseUrl}${updateOrderStatusEndpoint}`, {
+      const response = await fetch(`${baseUrl}${updateOrderStatusEndpoint}`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ orderRef: orderId, status: newStatus }),
+      body: JSON.stringify({
+        orderRef: orderId,
+        status: newStatus,
+        ...(shippingFee !== "" && { shippingFee })  // Only include if defined
+      }),
     });
 
     if (!response.ok) throw new Error("Failed to update order status.");
