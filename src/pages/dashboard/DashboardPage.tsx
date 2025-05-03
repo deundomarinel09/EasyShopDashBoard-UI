@@ -1,15 +1,13 @@
-// DashboardPage.tsx
-
 import { useState, useEffect, Suspense, lazy } from "react";
 import { fetchListProductData } from "../api/productApi";
 import { fetchAllUsers } from "../api/userApi";
 import { fetchOrderData, fetchItemData } from "../api/orderApi";
 import StatCard from "./components/StatCard";
-import RecentOrdersTable from "./components/RecentOrdersTable"; // Import RecentOrdersTable
+import RecentOrdersTable from "./components/RecentOrdersTable"; 
 import TopSellingProducts from "./components/TopSellingProducts";
 import { DollarSign, ShoppingCart, Users, Package } from "lucide-react";
+import Papa from "papaparse"; // Import papaparse for CSV generation
 
-// Dynamically import the components
 const RevenueOverview = lazy(() => import("./components/RevenueOverview"));
 const SalesByCategory = lazy(() => import("./components/SalesByCategory"));
 
@@ -23,7 +21,7 @@ const DashboardPage = () => {
     fetchAndUpdateOrders();
     fetchAndUpdateCustomers();
     fetchAndUpdateProducts();
-    fetchAndUpdateItems(); // New function for fetching item data
+    fetchAndUpdateItems();
   }, []);
 
   const fetchAndUpdateItems = async () => {
@@ -61,6 +59,7 @@ const DashboardPage = () => {
       const response = await fetchOrderData();
       const orderArray = response.data.$values;
       setOrders(orderArray);
+      console.log("Fetched orders:", orderArray); // Debugging: log orders
     } catch (error: any) {
       alert(`Error fetching orders: ${error}`);
     }
@@ -72,6 +71,44 @@ const DashboardPage = () => {
   );
 
   const totalOrdersCount = orders?.length;
+
+  // CSV Download Function (with manual CSV generation)
+  const handleDownloadCSV = () => {
+    const data = orders.map((order) => ({
+      OrderID: order.id,
+      Customer: order.customerName,
+      Status: order.status,
+      Amount: order.amount,
+      ShippingFee: order.shippingFee,
+      Total: order.amount + (order.shippingFee || 0),
+      Date: new Date(order.date).toLocaleDateString(),
+    }));
+
+    console.log("Data to export:", data); // Debugging: check data structure
+
+    // Create CSV string manually
+    const header = ["OrderID", "Customer", "Status", "Amount", "ShippingFee", "Total", "Date"];
+    const rows = data.map((row) => [
+      row.OrderID,
+      row.Customer,
+      row.Status,
+      row.Amount,
+      row.ShippingFee,
+      row.Total,
+      row.Date,
+    ]);
+
+    // Combine header and rows into CSV
+    const csvContent = [header.join(","), ...rows.map((row) => row.join(","))].join("\n");
+
+    // Create a Blob and trigger the download
+    const blob = new Blob([csvContent], { type: "text/csv" });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "orders_report.csv";
+    a.click();
+  };
 
   // Mock data for statistics
   const stats = [
@@ -123,9 +160,18 @@ const DashboardPage = () => {
         ))}
       </div>
 
+      {/* Button to download CSV */}
+      <div>
+        <button 
+          onClick={handleDownloadCSV} 
+          className="bg-blue-500 text-white px-4 py-2 rounded"
+        >
+          Download Orders Report
+        </button>
+      </div>
+
       {/* Charts Section */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Suspense fallback is shown while components are loading */}
         <Suspense fallback={<div>Loading Revenue Overview...</div>}>
           <RevenueOverview orders={orders} />
         </Suspense>
@@ -138,7 +184,6 @@ const DashboardPage = () => {
       {/* Recent Orders & Top Products */}
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
         <div className="lg:col-span-3 bg-white rounded-lg shadow-sm overflow-hidden">
-          {/* Pass the orders to the RecentOrdersTable component */}
           <RecentOrdersTable orders={orders} />
         </div>
 

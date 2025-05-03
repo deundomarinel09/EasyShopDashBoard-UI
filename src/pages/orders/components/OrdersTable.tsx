@@ -9,6 +9,7 @@ type Order = {
   amount: number;
   status: string;
   items: Array<string>;
+  shippingFee: number;
 };
 
 type OrdersTableProps = {
@@ -65,7 +66,7 @@ const OrdersTable = ({ filteredOrders, onViewClick }: OrdersTableProps) => {
                     {order.date}
                   </td>
                   <td className="px-6 py-4 text-sm text-gray-900">
-                    {order.amount.toFixed(2)}
+                  {(order.amount + (order.shippingFee || 0)).toFixed(2)}
                   </td>
                   <td className="px-6 py-4">
                     <span

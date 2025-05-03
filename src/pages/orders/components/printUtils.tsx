@@ -1,45 +1,47 @@
-// printUtils.tsx
 export const handlePrint = (contentId: string) => {
-    const printContent = document.getElementById(contentId);
-    if (printContent) {
-      const printWindow = window.open('', '_blank');
-      if (printWindow) {
-        printWindow.document.write(`
-          <html>
-            <head>
-              <title>Order Details</title>
-              <style>
-                @media print {
-                  .no-print {
-                    display: none !important;
-                  }
+  const printContent = document.getElementById(contentId);
+  if (printContent) {
+    const printWindow = window.open('', '_blank');
+    if (printWindow) {
+      printWindow.document.write(`
+        <html>
+          <head>
+            <title>Receipt</title>
+            <style>
+              @media print {
+                @page {
+                  size: 90mm 225mm; /* Chou 40 or receipt size */
+                  margin: 5mm;
                 }
+
                 body {
-                  font-family: Arial, sans-serif;
-                  padding: 20px;
+                  font-family: "Courier New", monospace;
+                  font-size: 12px;
+                  line-height: 1.2;
+                  white-space: pre;
                 }
-                table {
-                  border-collapse: collapse;
-                  width: 100%;
+
+                .no-print {
+                  display: none !important;
                 }
-                th, td {
-                  border: 1px solid #ccc;
-                  padding: 8px;
-                }
-                th {
-                  background-color: #f9f9f9;
-                }
-              </style>
-            </head>
-            <body>
-              ${printContent.innerHTML}
-            </body>
-          </html>
-        `);
-        printWindow.document.close();
-        printWindow.focus();
-        printWindow.print();
-      }
+              }
+
+              body {
+                font-family: "Courier New", monospace;
+                padding: 5mm;
+                font-size: 12px;
+                white-space: pre;
+              }
+            </style>
+          </head>
+          <body>
+            ${printContent.innerText}
+          </body>
+        </html>
+      `);
+      printWindow.document.close();
+      printWindow.focus();
+      printWindow.print();
     }
-  };
-  
+  }
+};

@@ -224,29 +224,7 @@ const ReportsPage = () => {
       {/* Report Controls */}
       <div className="bg-white rounded-lg shadow-sm p-4">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between space-y-3 md:space-y-0">
-          <div className="flex flex-col sm:flex-row sm:items-center space-y-3 sm:space-y-0 sm:space-x-4">
-            <div className="flex items-center space-x-2">
-              <Filter className="h-5 w-5 text-gray-400" />
-              <select
-                className="border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                value={selectedReport}
-                onChange={(e) => setSelectedReport(e.target.value)}
-              >
-                <option value="sales">Sales Report</option>
-                <option value="category">Category Sales</option>
-              </select>
-            </div>
-            <div className="flex items-center space-x-2">
-              <Calendar className="h-5 w-5 text-gray-400" />
-              <select
-                className="border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                value={dateRange}
-                onChange={(e) => setDateRange(e.target.value)}
-              >
-                <option value="month">Last 6 Months</option>
-                <option value="year">This Year</option>
-              </select>
-            </div>
+          <div className="flex flex-col sm:flex-row sm:items-center space-y-3 sm:space-y-0 sm:space-x-4">       
           </div>
           <div className="flex items-center space-x-4">
             <button
