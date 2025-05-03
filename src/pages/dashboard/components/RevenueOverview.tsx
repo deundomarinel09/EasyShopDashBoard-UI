@@ -89,7 +89,7 @@ const RevenueOverview = ({ orders }: { orders: any[] }) => {
               y: {
                 beginAtZero: true,
                 ticks: {
-                  callback: (value) => `$${value.toLocaleString()}`,
+                  callback: (value) => `₱${value.toLocaleString()}`,
                 },
               },
             },
