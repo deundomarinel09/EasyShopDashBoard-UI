@@ -59,7 +59,6 @@ const DashboardPage = () => {
       const response = await fetchOrderData();
       const orderArray = response.data.$values;
       setOrders(orderArray);
-      console.log("Fetched orders:", orderArray); // Debugging: log orders
     } catch (error: any) {
       alert(`Error fetching orders: ${error}`);
     }
@@ -72,12 +71,15 @@ const DashboardPage = () => {
 
   const totalOrdersCount = orders?.length;
 
+  console.log("orders",orders);
   // CSV Download Function (with manual CSV generation)
   const handleDownloadCSV = () => {
     const data = orders.map((order) => ({
       OrderID: order.id,
-      Customer: order.customerName,
-      Status: order.status,
+      Customer: typeof order.customer === "object" && order.customer !== null
+      ? `${order.customer.firstName || ""} ${order.customer.lastName || ""}`.trim()
+      : String(order.customer || ""),
+          Status: order.status,
       Amount: order.amount,
       ShippingFee: order.shippingFee,
       Total: order.amount + (order.shippingFee || 0),
@@ -87,17 +89,30 @@ const DashboardPage = () => {
     console.log("Data to export:", data); // Debugging: check data structure
 
     // Create CSV string manually
-    const header = ["OrderID", "Customer", "Status", "Amount", "ShippingFee", "Total", "Date"];
-    const rows = data.map((row) => [
-      row.OrderID,
-      row.Customer,
-      row.Status,
-      row.Amount,
-      row.ShippingFee,
-      row.Total,
-      row.Date,
-    ]);
 
+    const escapeCsv = (value: string | number) => {
+      const str = String(value).replace(/"/g, '""');
+      if (typeof value === "number" && value > 1e11) {
+        // Format large numbers so Excel treats them as text
+        return `"=""${str}"""`;
+      }
+      return `"${str}"`;
+    };
+    
+    
+
+    const header = ["OrderID", "Customer", "Status", "Amount", "ShippingFee", "Total", "Date"];
+  const rows = data.map((row) => [
+    escapeCsv(`'${row.OrderID}`),
+    escapeCsv(row.Customer),
+    escapeCsv(row.Status),
+    escapeCsv(row.Amount),
+    escapeCsv(row.ShippingFee),
+    escapeCsv(row.Total),
+    escapeCsv(row.Date),
+  ]);
+
+  console.log("rows",rows);
     // Combine header and rows into CSV
     const csvContent = [header.join(","), ...rows.map((row) => row.join(","))].join("\n");
 
