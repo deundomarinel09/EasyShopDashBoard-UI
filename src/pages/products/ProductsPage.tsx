@@ -75,13 +75,24 @@ const ProductsPage = () => {
           <h1 className="text-2xl font-bold text-gray-900">Products</h1>
           <p className="text-gray-500">Manage your product catalog</p>
         </div>
-        <Link
-          to="/products/new"
-          className="flex items-center justify-center bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-150"
-        >
-          <Plus className="h-5 w-5 mr-2" />
-          Add Product
-        </Link>
+        <div className="flex flex-wrap gap-3">
+  <Link
+    to="/products/new"
+    className="flex items-center justify-center bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-150"
+  >
+    <Plus className="h-5 w-5 mr-2" />
+    Add Product
+  </Link>
+
+  <Link
+    to="/products/category"
+    className="flex items-center justify-center bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-150"
+  >
+    <Plus className="h-5 w-5 mr-2" />
+    Add Category
+  </Link>
+</div>
+
       </div>
 
       {/* Filters and Search */}

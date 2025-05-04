@@ -13,10 +13,10 @@ const DashboardPage = lazy(() => import("./pages/dashboard/DashboardPage"));
 const UsersPage = lazy(() => import("./pages/users/UsersPage"));
 const OrdersPage = lazy(() => import("./pages/orders/OrdersPage"));
 const ProductsPage = lazy(() => import("./pages/products/ProductsPage"));
-const ReportsPage = lazy(() => import("./pages/reports/ReportsPage"));
 const ProductFormPage = lazy(() => import("./pages/products/ProductFormPage"));
 const NotFoundPage = lazy(() => import("./pages/NotFoundPage"));
 const VerifyOtp = lazy(() => import("./pages/auth/otpVerification"));
+const AddCategory = lazy(() => import ("./pages/products/AddCategory"));
 
 
 function App() {
@@ -43,7 +43,7 @@ function App() {
   <Route path="products" element={<ProductsPage />} />
   <Route path="products/new" element={<ProductFormPage />} />
   <Route path="products/edit/:id" element={<ProductFormPage />} />
-  <Route path="reports" element={<ReportsPage />} />
+  <Route path="products/category" element={<AddCategory/>}/>
 </Route>
 
 

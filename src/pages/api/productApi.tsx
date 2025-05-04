@@ -17,6 +17,8 @@ const listCategories = "/api/Dash/GetAllCategories";
 const productById = "/api/Dash/GetProductById";
 const updateProduct = "/api/Dash/UpdateProduct";
 const addProduct = "/api/Dash/AddProduct";
+const updateCategory = "/api/Dash/UpdateCategory";
+const addCategory = "/api/Dash/AddCategory";
 
 export const fetchDeleteProductData = (productId: number) => {
   return axios.post(`${baseUrl}${deleteProductEndpoint}`, { id: productId }); // Send id in the body
@@ -29,7 +31,23 @@ return axios.post(`${baseUrl}${listProductEndpoint}`)
 };
 
 export const fetchCategoriesData = () => {
-  return axios.post(`${baseUrl}${listCategories}`);
+    return axios.post(`${baseUrl}${listCategories}`);
+};
+
+export const fetchAddCategoryData = (category: { id: number; name: string }) => {
+    return axios.post(`${baseUrl}${addCategory}`, category, {
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+};
+
+export const fetchUpdateCategoryData = (category: { id: number; name: string }) => {
+    return axios.post(`${baseUrl}${updateCategory}`, category, {
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
 };
 
 export const fetchListProductByIdData = (id:number) => {
