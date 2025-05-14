@@ -6,7 +6,7 @@ import Loading from "../common/Loading";
 type PrivateRouteProps = {
   children: ReactNode;
 };
-
+//for routing 
 const PrivateRoute = ({ children }: PrivateRouteProps) => {
   const { isAuthenticated, isLoading } = useAuth();
   const location = useLocation();
