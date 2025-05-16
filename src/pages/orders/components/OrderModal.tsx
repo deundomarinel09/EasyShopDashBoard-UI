@@ -70,6 +70,9 @@ const OrderModal: React.FC<OrderModalProps> = ({
                   <p className="text-sm text-gray-600">
                     <strong>Email:</strong> {selectedOrder?.email}
                   </p>
+                  <p className="text-sm text-gray-600">
+                    <strong>Address:</strong> {selectedOrder?.address}
+                  </p>
                 </div>
                 <div>
                   <p className="text-sm text-gray-600">
