@@ -27,6 +27,8 @@ const OrderModal: React.FC<OrderModalProps> = ({
   const [localStatus, setLocalStatus] = useState("");
   const [shippingFee, setShippingFee] = useState<number | "">("");
 
+  const statusFlow = ["Pending", "Processing", "Shipped", "Completed"];
+
   useEffect(() => {
     if (selectedOrder) {
       setLocalStatus(selectedOrder.status);
@@ -75,7 +77,24 @@ const OrderModal: React.FC<OrderModalProps> = ({
                     {new Date(selectedOrder?.date).toLocaleDateString()}
                   </p>
                   <p className="text-sm text-gray-600">
-                    <strong>Status:</strong> {selectedOrder?.status}
+                    <strong>Current Status:</strong>{" "}
+                    <span
+                      className={`inline-block px-2 py-1 text-xs font-semibold rounded ${
+                        selectedOrder?.status === "Pending"
+                          ? "bg-yellow-100 text-yellow-800"
+                          : selectedOrder?.status === "Processing"
+                          ? "bg-blue-100 text-blue-800"
+                          : selectedOrder?.status === "Shipped"
+                          ? "bg-purple-100 text-purple-800"
+                          : selectedOrder?.status === "Completed"
+                          ? "bg-green-100 text-green-800"
+                          : selectedOrder?.status === "Cancelled"
+                          ? "bg-red-100 text-red-800"
+                          : "bg-gray-100 text-gray-800"
+                      }`}
+                    >
+                      {selectedOrder?.status}
+                    </span>
                   </p>
                   <p className="text-sm text-gray-600">
                     <strong>Items Total Amount:</strong> ₱
@@ -99,26 +118,40 @@ const OrderModal: React.FC<OrderModalProps> = ({
                 >
                   Update Status
                 </label>
+
                 {localStatus === "Cancelled" ? (
                   <p className="text-sm font-semibold text-red-600">Cancelled</p>
                 ) : (
-                  <select
-                    id="status"
-                    value={localStatus}
-                    onChange={(e) => setLocalStatus(e.target.value)}
-                    className="block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  >
-                    {statusOptions
-                      .filter((status) => status !== "Cancelled")
-                      .map((status) => (
-                        <option key={status} value={status}>
+                  <div className="flex flex-wrap gap-2">
+                    {(() => {
+                      const currentIndex = statusFlow.indexOf(selectedOrder?.status);
+                      const allowedStatuses = statusFlow.slice(currentIndex + 1);
+                      return allowedStatuses.map((status) => (
+                        <button
+                          key={status}
+                          type="button"
+                          onClick={() => {
+                            if (
+                              statusFlow.indexOf(status) >
+                              statusFlow.indexOf(localStatus)
+                            ) {
+                              setLocalStatus(status);
+                            }
+                          }}
+                          className={`px-4 py-2 rounded-md text-sm font-medium border ${
+                            localStatus === status
+                              ? "bg-blue-500 text-white border-blue-500"
+                              : "bg-white text-gray-700 border-gray-300 hover:bg-gray-100"
+                          }`}
+                        >
                           {status}
-                        </option>
-                      ))}
-                  </select>
+                        </button>
+                      ));
+                    })()}
+                  </div>
                 )}
 
-                {localStatus === "Processing" || localStatus === "Pending" ? (
+                {(localStatus === "Processing" || localStatus === "Pending") ? (
                   <div className="mt-4">
                     <label
                       htmlFor="shippingFee"
@@ -136,6 +169,7 @@ const OrderModal: React.FC<OrderModalProps> = ({
                       className="block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                       min="0"
                       step="0.01"
+                      disabled 
                     />
                   </div>
                 ) : (
@@ -249,9 +283,9 @@ const OrderModal: React.FC<OrderModalProps> = ({
         </div>
       )}
 
-<div id="print-content" style={{ display: "none" }}>
-  <pre style={{ fontFamily: "monospace", fontSize: "12px" }}>
-{`
+      <div id="print-content" style={{ display: "none" }}>
+        <pre style={{ fontFamily: "monospace", fontSize: "12px" }}>
+          {`
 MARITON GROCERY
 Tuguegarao City, Region II 3500
 VAT-REG-TIN: 005-900-881-003
@@ -275,9 +309,8 @@ GRAND TOTAL:   ₱${grandTotal.toFixed(2)}
 Date: ${new Date(selectedOrder?.date).toLocaleDateString()}
 Customer Signature: _______________________
 `}
-  </pre>
-</div>
-
+        </pre>
+      </div>
     </>
   );
 };
