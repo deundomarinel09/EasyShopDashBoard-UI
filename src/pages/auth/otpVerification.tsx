@@ -3,7 +3,6 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { verifyOtp, resendOtp } from '../api/userApi';
 import { useAuth } from '../../contexts/AuthContext';
 
-// === Types ===
 interface LocationState {
   email: string;
 }
@@ -11,7 +10,8 @@ interface LocationState {
 export default function OtpVerification() {
   const [otp, setOtp] = useState<string>('');
   const [error, setError] = useState<string>('');
-  const [loading, setLoading] = useState<boolean>(false);
+  const [verifying, setVerifying] = useState<boolean>(false);
+  const [resending, setResending] = useState<boolean>(false);
   const [otpResent, setOtpResent] = useState<boolean>(false);
 
   const { setUser } = useAuth();
@@ -22,12 +22,12 @@ export default function OtpVerification() {
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setLoading(true);
+    setVerifying(true);
     setError('');
 
     if (!passedEmail) {
       setError('Email is missing.');
-      setLoading(false);
+      setVerifying(false);
       return;
     }
 
@@ -35,25 +35,22 @@ export default function OtpVerification() {
       const res = await verifyOtp(passedEmail, otp);
 
       if (res?.message === "OTP verified") {
-        const verifiedUser = res.user; // Extract the user data from the response
+        const verifiedUser = res.user;
 
-        // Prepare the user object to store (you can include/exclude fields based on your requirements)
         const updatedUser = {
           id: verifiedUser.id,
-          name: `${verifiedUser.firstname} ${verifiedUser.lastname}`, // Combine first and last name
+          name: `${verifiedUser.firstname} ${verifiedUser.lastname}`,
           email: verifiedUser.email,
           role: verifiedUser.role,
-          avatar: verifiedUser.avatar || "", // Optional, in case avatar exists
-          isOtpRequired: false, // OTP is no longer required after successful verification
+          avatar: verifiedUser.avatar || "",
+          isOtpRequired: false,
         };
 
-        // Store the updated user data in the context and localStorage
-        setUser(updatedUser); // Update the user in the context
-        localStorage.setItem('user', JSON.stringify(updatedUser)); // Store the user in localStorage
-
-        navigate('/'); // Navigate to the home page or another page after success
+        setUser(updatedUser);
+        localStorage.setItem('user', JSON.stringify(updatedUser));
+        navigate('/');
       } else {
-       alert(`OTP verification failed: ${res?.message}`);
+        alert(`OTP verification failed: ${res?.message}`);
         setError(res?.message || 'Invalid or expired OTP.');
       }
     } catch (err) {
@@ -61,16 +58,16 @@ export default function OtpVerification() {
       setError('Something went wrong. Please try again.');
     }
 
-    setLoading(false);
+    setVerifying(false);
   };
 
   const handleResendOtp = async () => {
-    setLoading(true);
+    setResending(true);
     setError('');
 
     if (!passedEmail) {
       setError('Email is missing.');
-      setLoading(false);
+      setResending(false);
       return;
     }
 
@@ -87,7 +84,7 @@ export default function OtpVerification() {
       setError('Failed to resend OTP.');
     }
 
-    setLoading(false);
+    setResending(false);
   };
 
   return (
@@ -101,35 +98,54 @@ export default function OtpVerification() {
         )}
 
         <div className="mb-6">
-          <label className="block text-gray-700 mb-2" htmlFor="otp">
-            OTP
-          </label>
-          <input
-            type="text"
-            id="otp"
-            value={otp}
-            onChange={(e) => setOtp(e.target.value)}
-            className="w-full px-3 py-2 border rounded-lg"
-            required
-          />
+          <label className="block text-gray-700 mb-2" htmlFor="otp">OTP</label>
+          <div className="flex justify-between gap-2">
+            {[...Array(6)].map((_, idx) => (
+              <input
+                key={idx}
+                type="text"
+                maxLength={1}
+                inputMode="numeric"
+                className="w-12 h-12 text-center text-xl border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                value={otp[idx] || ''}
+                onChange={(e) => {
+                  const val = e.target.value.replace(/[^0-9]/g, '');
+                  if (!val) return;
+
+                  const newOtp = otp.split('');
+                  newOtp[idx] = val;
+                  setOtp(newOtp.join(''));
+
+                  const next = document.getElementById(`otp-${idx + 1}`);
+                  if (next) (next as HTMLInputElement).focus();
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Backspace' && !otp[idx]) {
+                    const prev = document.getElementById(`otp-${idx - 1}`);
+                    if (prev) (prev as HTMLInputElement).focus();
+                  }
+                }}
+                id={`otp-${idx}`}
+              />
+            ))}
+          </div>
         </div>
 
         <button
           type="submit"
           className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700"
-          disabled={loading}
+          disabled={verifying}
         >
-          {loading ? 'Verifying...' : 'Verify OTP'}
+          {verifying ? 'Verifying...' : 'Verify OTP'}
         </button>
 
-        {/* Resend OTP Button */}
         <button
           type="button"
           onClick={handleResendOtp}
           className="w-full bg-gray-600 text-white py-2 rounded-lg mt-4 hover:bg-gray-700"
-          disabled={loading}
+          disabled={resending}
         >
-          {loading ? 'Resending...' : 'Resend OTP'}
+          {resending ? 'Resending...' : 'Resend OTP'}
         </button>
 
         {otpResent && (
