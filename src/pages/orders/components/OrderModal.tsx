@@ -13,6 +13,11 @@ interface OrderModalProps {
   products: any[];
 }
 
+function wrapText(text: string, maxLength: number) {
+  const regex = new RegExp(`(.{1,${maxLength}})(\\s+|$)`, "g");
+  return text.match(regex)?.join("\n") ?? text;
+}
+
 const OrderModal: React.FC<OrderModalProps> = ({
   isModalOpen,
   selectedOrder,
@@ -311,6 +316,7 @@ GRAND TOTAL:   ₱${grandTotal.toFixed(2)}
  
 Date: ${new Date(selectedOrder?.date).toLocaleDateString()}
 Customer Signature: _______________________
+Address: ${wrapText(selectedOrder?.address || "N/A", 40)}
 `}
         </pre>
       </div>
