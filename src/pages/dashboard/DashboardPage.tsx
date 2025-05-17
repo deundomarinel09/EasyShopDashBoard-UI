@@ -71,7 +71,6 @@ const DashboardPage = () => {
 
   const totalOrdersCount = orders?.length;
 
-  console.log("orders",orders);
   // CSV Download Function (with manual CSV generation)
   const handleDownloadCSV = () => {
     const data = orders.map((order) => ({
@@ -86,7 +85,6 @@ const DashboardPage = () => {
       Date: new Date(order.date).toLocaleDateString(),
     }));
 
-    console.log("Data to export:", data); // Debugging: check data structure
 
     // Create CSV string manually
 
@@ -112,7 +110,6 @@ const DashboardPage = () => {
     escapeCsv(row.Date),
   ]);
 
-  console.log("rows",rows);
     // Combine header and rows into CSV
     const csvContent = [header.join(","), ...rows.map((row) => row.join(","))].join("\n");
 

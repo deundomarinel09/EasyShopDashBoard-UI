@@ -19,6 +19,7 @@ const updateProduct = "/api/Dash/UpdateProduct";
 const addProduct = "/api/Dash/AddProduct";
 const updateCategory = "/api/Dash/UpdateCategory";
 const addCategory = "/api/Dash/AddCategory";
+const listUnitsData = "/api/Dash/Unit";
 
 export const fetchDeleteProductData = (productId: number) => {
   return axios.post(`${baseUrl}${deleteProductEndpoint}`, { id: productId }); // Send id in the body
@@ -27,11 +28,15 @@ export const fetchDeleteProductData = (productId: number) => {
 
 
 export const fetchListProductData = () => {
-return axios.post(`${baseUrl}${listProductEndpoint}`)
+    return axios.post(`${baseUrl}${listProductEndpoint}`)
 };
 
 export const fetchCategoriesData = () => {
     return axios.post(`${baseUrl}${listCategories}`);
+};
+
+export const fetchUnitsData = () => {
+    return axios.post(`${baseUrl}${listUnitsData}`);
 };
 
 export const fetchAddCategoryData = (category: { id: number; name: string }) => {
@@ -51,7 +56,7 @@ export const fetchUpdateCategoryData = (category: { id: number; name: string }) 
 };
 
 export const fetchListProductByIdData = (id:number) => {
-  return axios.post(`${baseUrl}${productById}/${id}`);
+    return axios.post(`${baseUrl}${productById}/${id}`);
 }
 
 export const fetchItemData = () => {
@@ -59,7 +64,7 @@ export const fetchItemData = () => {
 };
 
 export const fetchUpdateProductData = (formData: FormData) => {
-  return axios.put(`${baseUrl}${updateProduct}`, formData, {
+    return axios.put(`${baseUrl}${updateProduct}`, formData, {
     headers: {
       "Content-Type": "multipart/form-data",
     },
@@ -67,7 +72,7 @@ export const fetchUpdateProductData = (formData: FormData) => {
 };
 
 export const fetchAddProductData = (formData: FormData) => {
-  return axios.put(`${baseUrl}${addProduct}`, formData, {
+    return axios.put(`${baseUrl}${addProduct}`, formData, {
     headers: {
       "Content-Type": "multipart/form-data",
     },

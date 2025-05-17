@@ -1,12 +1,15 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { ArrowLeft, Save } from "lucide-react";
-import CreatableSelect from 'react-select/creatable';
+import CreatableSelect from "react-select/creatable";
 
-
-
-import { fetchListProductByIdData, fetchCategoriesData, fetchUpdateProductData, fetchAddProductData} from "../api/productApi";
-
+import {
+  fetchListProductByIdData,
+  fetchCategoriesData,
+  fetchUpdateProductData,
+  fetchAddProductData,
+  fetchUnitsData,
+} from "../api/productApi";
 
 type Attribute = {
   name: string;
@@ -27,15 +30,24 @@ type Product = {
   image: string;
   attributes: Attribute[];
   stock: number;
+  unit: string;
 };
 
 type Categories = {
-  id: number,
-  name: string
-}
+  id: number;
+  name: string;
+};
+type Units = {
+  id: number;
+  name: string;
+};
 
 type CategoryResponse = {
   $values: Categories[];
+};
+
+type UnitsResponse = {
+  $values: Units[];
 };
 
 const ProductFormPage = () => {
@@ -44,9 +56,10 @@ const ProductFormPage = () => {
   const navigate = useNavigate();
   const [productData, setProduct] = useState<Product | null>(null);
   const [CategoriesData, setCategories] = useState<Categories[] | null>(null);
+  const [UnitsData, setUnits] = useState<Units[] | null>(null);
+
   const [imageFile, setImageFile] = useState<File | null>(null);
   const isEditMode = !!id;
-
 
   useEffect(() => {
     if (isEditMode && numericId) {
@@ -55,6 +68,24 @@ const ProductFormPage = () => {
           const response = await fetchListProductByIdData(numericId);
           const fetchedProduct = response.data || null;
           setProduct(fetchedProduct);
+  
+          // Populate form here directly
+          if (fetchedProduct) {
+            setFormData({
+              name: fetchedProduct.name,
+              description: fetchedProduct.description,
+              price: fetchedProduct.price.toString(),
+              category: fetchedProduct.category || "",
+              inventory: fetchedProduct.stock.toString(),
+              unit: fetchedProduct.unit || "",
+              status: fetchedProduct.status || "Active",
+              sku: fetchedProduct.sku || "",
+              weight: fetchedProduct.weight || "",
+              dimensions: fetchedProduct.dimensions || "",
+              image: fetchedProduct.image || "",
+            });
+          }
+  
         } catch (error: any) {
           alert(`Error fetching product: ${error.message}`);
         }
@@ -63,35 +94,37 @@ const ProductFormPage = () => {
       loadProducts();
     }
   }, [isEditMode, numericId]);
+  
+
+  useEffect(() => {
+    const loadUnits = async () => {
+      try {
+        const response = await fetchUnitsData();
+        const fetchedUnits = (response.data as UnitsResponse)?.$values || [];
+        setUnits(fetchedUnits);
+      } catch (error: any) {
+        alert(`Error fetching units: ${error.message}`);
+      }
+    };
+
+    loadUnits();
+  }, []);
 
   useEffect(() => {
     const loadCategories = async () => {
       try {
-        const response = await fetchCategoriesData();
+        const response = await fetchCategoriesData(); // Corrected
         const fetchedCategories = (response.data as CategoryResponse)?.$values || [];
-        setCategories(fetchedCategories); 
+        setCategories(fetchedCategories);
       } catch (error: any) {
         alert(`Error fetching categories: ${error.message}`);
       }
     };
   
     loadCategories();
-  }, []); 
+  }, []);
   
-  
-  // Form state
-  const [formData, setFormData] = useState({
-    name: "",
-    description: "",
-    price: "",
-    category: "",
-    inventory: "",
-    status: "Active",
-    sku: "",
-    weight: "",
-    dimensions: "",
-    image: "",
-  });
+
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [isSaving, setIsSaving] = useState(false);
 
@@ -104,21 +137,36 @@ const ProductFormPage = () => {
         price: productData.price.toString(),
         category: productData.category || "",
         inventory: productData.stock.toString(),
+        unit: productData.unit || "",
         status: productData.status || "Active",
         sku: productData.sku || "",
         weight: productData.weight || "",
         dimensions: productData.dimensions || "",
         image: productData.image || "",
       });
-      }
-  }, [numericId, isEditMode, productData]);
-  
-  
 
+      console.log("Populating form with product data:", productData);
+    }
+  }, [numericId, isEditMode, productData]);
+
+    // Form state
+    const [formData, setFormData] = useState({
+      name: "",
+      description: "",
+      price: "",
+      category: "",
+      inventory: "",
+      unit: "",
+      status: "Active",
+      sku: "",
+      weight: "",
+      dimensions: "",
+      image: "",
+    });
   const handleChange = (
     e: React.ChangeEvent<
       HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-    >,
+    >
   ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
@@ -135,11 +183,11 @@ const ProductFormPage = () => {
 
   const validateForm = () => {
     const newErrors: { [key: string]: string } = {};
-  
+
     if (!formData.name.trim()) {
       newErrors.name = "Product name is required";
     }
-  
+
     if (!formData.price.trim()) {
       newErrors.price = "Price is required";
     } else if (
@@ -149,7 +197,7 @@ const ProductFormPage = () => {
       newErrors.price =
         "Price must be a valid number greater than or equal to 0";
     }
-  
+
     if (!formData.inventory.trim()) {
       newErrors.inventory = "Inventory quantity is required";
     } else if (
@@ -159,37 +207,40 @@ const ProductFormPage = () => {
       newErrors.inventory =
         "Inventory must be a valid number greater than or equal to 0";
     }
-  
+
     if (!formData.category.trim()) {
       newErrors.category = "Category is required";
     }
-  
+
+    if (!formData.unit.trim()) {
+      newErrors.unit = "Unit of Measurement is required";
+    }
+    
     // NEW: Image required if adding product (not editing)
     if (!isEditMode && !imageFile) {
       newErrors.image = "Product image is required";
     }
-  
+
     return newErrors;
   };
-  
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-  
+
     const newErrors = validateForm();
 
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
       return;
     }
-  
+
     setIsSaving(true);
-  
+
     try {
       if (isEditMode) {
         await handleUpdateProduct(); // Save product
       } else {
-       await handleAddProduct();
+        await handleAddProduct();
         // await fetchCreateProductData(newProduct);
       }
       navigate("/products");
@@ -199,7 +250,7 @@ const ProductFormPage = () => {
       setIsSaving(false);
     }
   };
-  
+
   const handleAddProduct = async () => {
     try {
       const form = new FormData();
@@ -207,14 +258,15 @@ const ProductFormPage = () => {
       form.append("description", formData.description.trim());
       form.append("price", formData.price);
       form.append("stock", formData.inventory);
+      form.append("unit", formData.unit);
       form.append("category", formData.category);
       form.append("status", formData.status);
       form.append("sku", formData.sku.trim());
       form.append("weight", formData.weight.trim());
       form.append("dimensions", formData.dimensions.trim());
       form.append("createDate", new Date().toISOString());
-      form.append("image", formData.name.trim().replace(/\s+/g, ''));
-  
+      form.append("image", formData.name.trim().replace(/\s+/g, ""));
+
       if (imageFile) {
         form.append("imageFile", imageFile);
       }
@@ -224,37 +276,35 @@ const ProductFormPage = () => {
       alert("Error adding product: " + error.message);
     }
   };
-  
 
- const handleUpdateProduct = async () => {
-  try {
-    const form = new FormData();
-    form.append("id", numericId.toString());
-    form.append("name", formData.name.trim());
-    form.append("description", formData.description.trim());
-    form.append("price", formData.price);
-    form.append("stock", formData.inventory);
-    form.append("category", formData.category);
-    form.append("status", formData.status);
-    form.append("sku", formData.sku.trim());
-    form.append("weight", formData.weight.trim());
-    form.append("dimensions", formData.dimensions.trim());
-    form.append("createDate", new Date().toISOString());
-    form.append("image", formData.name.trim().replace(/\s+/g, ''));
+  const handleUpdateProduct = async () => {
+    try {
+      const form = new FormData();
+      form.append("id", numericId.toString());
+      form.append("name", formData.name.trim());
+      form.append("description", formData.description.trim());
+      form.append("price", formData.price);
+      form.append("stock", formData.inventory);
+      form.append("unit", formData.unit);
+      form.append("category", formData.category);
+      form.append("status", formData.status);
+      form.append("sku", formData.sku.trim());
+      form.append("weight", formData.weight.trim());
+      form.append("dimensions", formData.dimensions.trim());
+      form.append("createDate", new Date().toISOString());
+      form.append("image", formData.name.trim().replace(/\s+/g, ""));
 
-    if (imageFile) {
-      form.append("imageFile", imageFile);
+      if (imageFile) {
+        form.append("imageFile", imageFile);
+      }
+
+      const response = await fetchUpdateProductData(form);
+
+      alert("Product updated successfully!");
+    } catch (error: any) {
+      alert("Error updating product: " + error.message);
     }
-
-    const response = await fetchUpdateProductData(form);
-
-    alert("Product updated successfully!");
-  } catch (error: any) {
-    alert("Error updating product: " + error.message);
-  }
-};
-
-  
+  };
 
   return (
     <div className="space-y-6">
@@ -309,12 +359,11 @@ const ProductFormPage = () => {
       </div>
 
       <form
-  id="product-form"
-  onSubmit={handleSubmit}
-  className="space-y-8"
-  encType="multipart/form-data"
->
-
+        id="product-form"
+        onSubmit={handleSubmit}
+        className="space-y-8"
+        encType="multipart/form-data"
+      >
         <div className="bg-slate-200 shadow-sm rounded-lg overflow-hidden">
           <div className="p-6">
             <h2 className="text-lg font-medium text-gray-900 mb-4">
@@ -345,47 +394,44 @@ const ProductFormPage = () => {
                 )}
               </div>
 
-            
-
               <div className="sm:col-span-6">
-  <label
-    htmlFor="image"
-    className="block text-sm font-medium text-gray-700"
-  >
-    Upload Image<span className="text-red-500">*</span>
-  </label>
-  <input
-    type="file"
-    name="image"
-    id="image"
-    accept="image/*"
-    onChange={(e) => {
-      if (e.target.files && e.target.files.length > 0) {
-        setImageFile(e.target.files[0]);
-      }
-    }}
-    className="mt-1 block w-full text-sm text-gray-900 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-  />
-  {errors.image && (
-  <p className="mt-1 text-sm text-red-600">{errors.image}</p>
-)}
-  {/* Image Preview */}
-  {(imageFile || formData.image) && (
-    <img
-    src={
-      imageFile
-        ? URL.createObjectURL(imageFile) // If new image is uploaded
-        : `https://wyzlpxshonuzitdcgdoe.supabase.co/storage/v1/object/public/product-images//${formData.image.replace(/^product-images\//, '')}` // If image is fetched from the existing product
-    }
-    alt="Product Preview"
-    className="mt-2 h-40 object-contain border rounded"
-  
-    />
-  )}
-</div>
-
-
-
+                <label
+                  htmlFor="image"
+                  className="block text-sm font-medium text-gray-700"
+                >
+                  Upload Image<span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="file"
+                  name="image"
+                  id="image"
+                  accept="image/*"
+                  onChange={(e) => {
+                    if (e.target.files && e.target.files.length > 0) {
+                      setImageFile(e.target.files[0]);
+                    }
+                  }}
+                  className="mt-1 block w-full text-sm text-gray-900 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                />
+                {errors.image && (
+                  <p className="mt-1 text-sm text-red-600">{errors.image}</p>
+                )}
+                {/* Image Preview */}
+                {(imageFile || formData.image) && (
+                  <img
+                    src={
+                      imageFile
+                        ? URL.createObjectURL(imageFile) // If new image is uploaded
+                        : `https://wyzlpxshonuzitdcgdoe.supabase.co/storage/v1/object/public/product-images//${formData.image.replace(
+                            /^product-images\//,
+                            ""
+                          )}` // If image is fetched from the existing product
+                    }
+                    alt="Product Preview"
+                    className="mt-2 h-40 object-contain border rounded"
+                  />
+                )}
+              </div>
 
               <div className="sm:col-span-6">
                 <label
@@ -463,63 +509,96 @@ const ProductFormPage = () => {
 
               <div className="sm:col-span-3">
   <label
-    htmlFor="category"
+    htmlFor="unit"
     className="block text-sm font-medium text-gray-700"
   >
-    Category <span className="text-red-500">*</span>
+    Unit of Measurement <span className="text-red-500">*</span>
   </label>
-  <CreatableSelect
-    name="category"
-    id="category"
-    value={formData.category ? { label: formData.category, value: formData.category } : null}
-    onChange={(selectedOption) => {
-      handleChange({
-        target: {
-          name: "category",
-          value: selectedOption?.value ?? ""
-        }
-      } as React.ChangeEvent<HTMLSelectElement>);
-    }}
-    options={CategoriesData?.map((category) => ({
-      label: category.name.toUpperCase(),
-      value: category.name.toUpperCase()
-    }))}
-    classNamePrefix="react-select"
-    className={`mt-1`}
-    isClearable
-    placeholder="Select or type a category"
-    menuPortalTarget={document.body}
-    styles={{
-      control: (base, state) => ({
-        ...base,
-        borderColor: errors.category ? "#f87171" : "#d1d5db", // Tailwind red-400 or gray-300
-        boxShadow: state.isFocused
-          ? errors.category
-            ? "0 0 0 1px #ef4444" // red-500 focus ring
-            : "0 0 0 1px #3b82f6" // blue-500 focus ring
-          : null,
-        "&:hover": {
-          borderColor: state.isFocused
-            ? errors.category
-              ? "#ef4444"
-              : "#3b82f6"
-            : base.borderColor,
-        },
-        borderRadius: "0.375rem", // rounded-md
-      }),
-      menuPortal: (base) => ({ ...base, zIndex: 9999 }),
-    }}
-  />
-  {errors.category && (
-    <p className="mt-1 text-sm text-red-600">{errors.category}</p>
+  <select
+    name="unit"
+    id="unit"
+    value={formData.unit}
+    onChange={handleChange}
+    className={`mt-1 block w-full rounded-md shadow-sm ${
+      errors.unit
+        ? "border-red-300 focus:ring-red-500 focus:border-red-500"
+        : "border-gray-300 focus:ring-blue-500 focus:border-blue-500"
+    }`}
+  >
+    <option value="">-- Select Unit --</option>
+    {UnitsData?.map((unit) => (
+      <option key={unit.id} value={unit.name}>
+        {unit.name}
+      </option>
+    ))}
+  </select>
+  {errors.unit && (
+    <p className="mt-1 text-sm text-red-600">{errors.unit}</p>
   )}
 </div>
 
+
+
+              <div className="sm:col-span-3">
+                <label
+                  htmlFor="category"
+                  className="block text-sm font-medium text-gray-700"
+                >
+                  Category <span className="text-red-500">*</span>
+                </label>
+                <CreatableSelect
+                  name="category"
+                  id="category"
+                  value={
+                    formData.category
+                      ? { label: formData.category, value: formData.category }
+                      : null
+                  }
+                  onChange={(selectedOption) => {
+                    handleChange({
+                      target: {
+                        name: "category",
+                        value: selectedOption?.value ?? "",
+                      },
+                    } as React.ChangeEvent<HTMLSelectElement>);
+                  }}
+                  options={CategoriesData?.map((category) => ({
+                    label: category.name.toUpperCase(),
+                    value: category.name.toUpperCase(),
+                  }))}
+                  classNamePrefix="react-select"
+                  className={`mt-1`}
+                  isClearable
+                  placeholder="Select or type a category"
+                  menuPortalTarget={document.body}
+                  styles={{
+                    control: (base, state) => ({
+                      ...base,
+                      borderColor: errors.category ? "#f87171" : "#d1d5db", // Tailwind red-400 or gray-300
+                      boxShadow: state.isFocused
+                        ? errors.category
+                          ? "0 0 0 1px #ef4444" // red-500 focus ring
+                          : "0 0 0 1px #3b82f6" // blue-500 focus ring
+                        : null,
+                      "&:hover": {
+                        borderColor: state.isFocused
+                          ? errors.category
+                            ? "#ef4444"
+                            : "#3b82f6"
+                          : base.borderColor,
+                      },
+                      borderRadius: "0.375rem", // rounded-md
+                    }),
+                    menuPortal: (base) => ({ ...base, zIndex: 9999 }),
+                  }}
+                />
+                {errors.category && (
+                  <p className="mt-1 text-sm text-red-600">{errors.category}</p>
+                )}
+              </div>
             </div>
           </div>
         </div>
-
-
       </form>
     </div>
   );
