@@ -79,6 +79,9 @@ const OrderModal: React.FC<OrderModalProps> = ({
                   <p className="text-sm text-gray-600">
                     <strong>Address:</strong> {selectedOrder?.address}
                   </p>
+                  <p className="text-sm text-gray-600">
+                    <strong>Delivery instruction:</strong> {selectedOrder?.instruction}
+                  </p>
                 </div>
                 <div>
                   <p className="text-sm text-gray-600">
@@ -295,6 +298,8 @@ Customer Signature: _______________________
 
 
 Address: ${wrapText(selectedOrder?.address || "N/A", 40)}
+
+Delivery Instruction: ${wrapText(selectedOrder?.instruction || "N/A", 40)}
 `}
         </pre>
       </div>
