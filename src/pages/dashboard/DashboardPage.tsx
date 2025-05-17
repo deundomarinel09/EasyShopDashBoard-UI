@@ -65,7 +65,7 @@ const DashboardPage = () => {
   };
 
   const totalCompleted = orders?.reduce(
-    (sum, order) => (order.status.toLowerCase() === "completed" ? sum + order.amount : sum),
+    (sum, order) => (order.status.toLowerCase() === "completed" ? sum + order.grandTotal : sum),
     0,
   );
 
@@ -127,8 +127,6 @@ const DashboardPage = () => {
     {
       title: "Total Revenue",
       value: `₱ ${totalCompleted}`,
-      change: 12.5,
-      trend: "up",
       icon: DollarSign,
       bgColor: "bg-blue-500",
     },
@@ -172,15 +170,7 @@ const DashboardPage = () => {
         ))}
       </div>
 
-      {/* Button to download CSV */}
-      <div>
-        <button 
-          onClick={handleDownloadCSV} 
-          className="bg-blue-500 text-white px-4 py-2 rounded"
-        >
-          Download Orders Report
-        </button>
-      </div>
+ 
 
       {/* Charts Section */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

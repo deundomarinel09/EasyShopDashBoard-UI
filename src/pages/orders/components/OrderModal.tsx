@@ -53,7 +53,6 @@ const OrderModal: React.FC<OrderModalProps> = ({
   const grandTotal = selectedOrder?.grandTotal ?? 0;
 
 
-  console.log("selected order",selectedOrder);
   return (
     <>
       {isModalOpen && selectedOrder && (

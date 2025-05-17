@@ -31,17 +31,8 @@ const StatCard = ({ stat }: StatProps) => {
           className={`flex items-center ${
             trend === "up" ? "text-green-600" : "text-red-600"
           }`}
-        >
-          {trend === "up" ? (
-            <TrendingUp className="h-4 w-4 mr-1" />
-          ) : (
-            <TrendingDown className="h-4 w-4 mr-1" />
-          )}
-          <span className="text-sm font-medium">
-            {change}% {trend === "up" ? "increase" : "decrease"}
-          </span>
+        >    
         </div>
-        <p className="text-xs text-gray-500 mt-1">Compared to last month</p>
       </div>
     </div>
   );

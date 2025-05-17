@@ -24,7 +24,7 @@ const RevenueOverview = ({ orders }: { orders: any[] }) => {
       .filter((order) => order.status.toLowerCase() === "completed")
       .forEach((order) => {
         const month = new Date(order.date).getMonth();
-        monthlyRevenue[month] += order.amount;
+        monthlyRevenue[month] += order.grandTotal;
       });
 
     setChartData({

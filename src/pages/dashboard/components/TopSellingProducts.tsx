@@ -125,7 +125,7 @@ const TopSellingProducts = () => {
                 </div>
                 <div className="text-right">
                   <p className="text-sm font-semibold text-gray-900">
-                  ₱{product.price.toFixed(2)}
+                  ₱{product.price?.toFixed(2)}
                   </p>
                   <p className="text-xs text-gray-500">{product.count} sold</p>
                 </div>
