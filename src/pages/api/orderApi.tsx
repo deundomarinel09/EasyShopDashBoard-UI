@@ -16,7 +16,7 @@ return axios.post(`${baseUrl}${productEndPoint}`)
 
 export const fetchOrderData = async () => {
   try {
-    const response = await axios.post(`${baseUrl}${orderEndPoint}`);
+      const response = await axios.post(`${baseUrl}${orderEndPoint}`);
     return response;
   } catch (error) {
     alert(`Error in fetchOrderData: ${error}`);
@@ -32,7 +32,6 @@ export const fetchItemData = () => {
 export const updateOrderStatus = async (
   orderId: string,
   newStatus: string,
-  shippingFee?: number | ""
 ) => {
   try {
       const response = await fetch(`${baseUrl}${updateOrderStatusEndpoint}`, {
@@ -42,8 +41,7 @@ export const updateOrderStatus = async (
       },
       body: JSON.stringify({
         orderRef: orderId,
-        status: newStatus,
-        ...(shippingFee !== "" && { shippingFee })  // Only include if defined
+        status: newStatus,  
       }),
     });
 

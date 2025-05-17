@@ -7,7 +7,7 @@ interface OrderModalProps {
   updatedStatus: string;
   statusOptions: string[];
   handleStatusChange: (e: React.ChangeEvent<HTMLSelectElement>) => void;
-  handleSave: (shippingFee: number | "") => void;
+  handleSave: () => void;
   closeModal: () => void;
   items: any[];
   products: any[];
@@ -30,14 +30,12 @@ const OrderModal: React.FC<OrderModalProps> = ({
   products,
 }) => {
   const [localStatus, setLocalStatus] = useState("");
-  const [shippingFee, setShippingFee] = useState<number | "">("");
 
   const statusFlow = ["Pending", "Processing", "Shipped", "Completed"];
 
   useEffect(() => {
     if (selectedOrder) {
       setLocalStatus(selectedOrder.status);
-      setShippingFee(selectedOrder.shippingFee ?? "");
     }
   }, [selectedOrder]);
 
@@ -49,10 +47,13 @@ const OrderModal: React.FC<OrderModalProps> = ({
     }
   }, [localStatus, selectedOrder, handleStatusChange]);
 
-  const calculatedShipping = selectedOrder?.shippingFee ?? 0;
-  const itemsTotal = selectedOrder?.amount ?? 0;
-  const grandTotal = itemsTotal + calculatedShipping;
+  const distanceTotal = selectedOrder?.distanceDeliveryFee ?? 0;
+  const weightTotal = selectedOrder?.weightDeliveryFee ?? 0;
+  const itemsTotal = selectedOrder?.itemsBaseFee ?? 0;
+  const grandTotal = selectedOrder?.grandTotal ?? 0;
 
+
+  console.log("selected order",selectedOrder);
   return (
     <>
       {isModalOpen && selectedOrder && (
@@ -105,13 +106,18 @@ const OrderModal: React.FC<OrderModalProps> = ({
                     </span>
                   </p>
                   <p className="text-sm text-gray-600">
+                    <strong>Distance Fee:</strong> ₱
+                    {distanceTotal.toFixed(2)}
+                  </p>
+                  <p className="text-sm text-gray-600">
+                    <strong>Weight Delivery Fee:</strong> ₱
+                    {weightTotal.toFixed(2)}
+                  </p>
+                  <p className="text-sm text-gray-600">
                     <strong>Items Total Amount:</strong> ₱
                     {itemsTotal.toFixed(2)}
                   </p>
-                  <p className="text-sm text-gray-600">
-                    <strong>Shipping Fee:</strong> ₱
-                    {calculatedShipping.toFixed(2)}
-                  </p>
+                 
                   <p className="text-sm text-blue-700 font-semibold">
                     <strong>Grand Total:</strong> ₱{grandTotal.toFixed(2)}
                   </p>
@@ -159,39 +165,7 @@ const OrderModal: React.FC<OrderModalProps> = ({
                   </div>
                 )}
 
-                {(localStatus === "Processing" || localStatus === "Pending") ? (
-                  <div className="mt-4">
-                    <label
-                      htmlFor="shippingFee"
-                      className="block text-sm font-medium text-gray-700 mb-1"
-                    >
-                      Shipping Fee (₱)
-                    </label>
-                    <input
-                      type="number"
-                      id="shippingFee"
-                      value={shippingFee}
-                      onChange={(e) =>
-                        setShippingFee(parseFloat(e.target.value))
-                      }
-                      className="block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                      min="0"
-                      step="0.01"
-                      disabled 
-                    />
-                  </div>
-                ) : (
-                  <div className="mt-4">
-                    <label
-                      className="block text-sm font-medium text-gray-700 mb-1"
-                    >
-                      Shipping Fee (₱)
-                    </label>
-                    <div className="text-gray-800 font-semibold">
-                      ₱{calculatedShipping.toFixed(2)}
-                    </div>
-                  </div>
-                )}
+             
               </div>
 
               {/* Items Table */}
@@ -275,7 +249,7 @@ const OrderModal: React.FC<OrderModalProps> = ({
                 <button
                   className="w-full sm:w-auto px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition"
                   onClick={() => {
-                    handleSave(shippingFee);
+                    handleSave();
                     if (localStatus === "Shipped") {
                       setTimeout(() => {
                         handlePrint("print-content");
@@ -294,7 +268,7 @@ const OrderModal: React.FC<OrderModalProps> = ({
       <div id="print-content" style={{ display: "none" }}>
         <pre style={{ fontFamily: "monospace", fontSize: "12px" }}>
           {`
-MARITON GROCERY
+EASY SHOP
 Tuguegarao City, Region II 3500
 VAT-REG-TIN: 005-900-881-003
 
@@ -310,12 +284,16 @@ ${items
   })
   .join("")}
 -------------------------
-TOTAL:         ₱${itemsTotal.toFixed(2)}
-SHIPPING FEE:  ₱${calculatedShipping.toFixed(2)}
+ITEMS TOTAL:        ₱${itemsTotal.toFixed(2)}
+DISTANCE FEE:       ₱${distanceTotal.toFixed(2)}
+WEIGHT FEE:         ₱${weightTotal.toFixed(2)}
+
 GRAND TOTAL:   ₱${grandTotal.toFixed(2)}
  
 Date: ${new Date(selectedOrder?.date).toLocaleDateString()}
 Customer Signature: _______________________
+
+
 Address: ${wrapText(selectedOrder?.address || "N/A", 40)}
 `}
         </pre>

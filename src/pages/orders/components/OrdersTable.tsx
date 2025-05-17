@@ -6,10 +6,12 @@ type Order = {
   customer: string;
   email: string;
   date: string;
-  amount: number;
   status: string;
   items: Array<string>;
-  shippingFee: number;
+  distanceDeliveryFee: number;
+  weightDeliveryFee: number;
+  itemsBaseFee: number;
+  grandTotal: number;
 };
 
 type OrdersTableProps = {
@@ -18,6 +20,7 @@ type OrdersTableProps = {
 };
 
 const OrdersTable = ({ filteredOrders, onViewClick }: OrdersTableProps) => {
+
   return (
     <div className="bg-white rounded-lg shadow-sm overflow-hidden">
       <div className="overflow-x-auto">
@@ -29,7 +32,10 @@ const OrdersTable = ({ filteredOrders, onViewClick }: OrdersTableProps) => {
                 "Name",
                 "Email",
                 "Date",
-                "Amount",
+                "Distance Delivery Fee",
+                "Weight Delivery Fee",
+                "Items Total",
+                "Grand Total",
                 "Status",
                 "Actions",
               ].map((header) => (
@@ -66,7 +72,16 @@ const OrdersTable = ({ filteredOrders, onViewClick }: OrdersTableProps) => {
                     {order.date}
                   </td>
                   <td className="px-6 py-4 text-sm text-gray-900">
-                  {(order.amount + (order.shippingFee || 0)).toFixed(2)}
+                  {order.distanceDeliveryFee.toFixed(2)}
+                  </td>
+                  <td className="px-6 py-4 text-sm text-gray-900">
+                  {order.weightDeliveryFee.toFixed(2)}
+                  </td>
+                  <td className="px-6 py-4 text-sm text-gray-900">
+                  {order.itemsBaseFee.toFixed(2)}
+                  </td>
+                  <td className="px-6 py-4 text-sm text-gray-900">
+                  {order.grandTotal.toFixed(2)}
                   </td>
                   <td className="px-6 py-4">
                     <span

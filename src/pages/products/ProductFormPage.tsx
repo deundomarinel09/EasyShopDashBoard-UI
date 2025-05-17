@@ -136,7 +136,6 @@ const ProductFormPage = () => {
         image: productData.image || "",
       });
 
-      console.log("Populating form with product data:", productData);
     }
   }, [numericId, isEditMode, productData]);
 

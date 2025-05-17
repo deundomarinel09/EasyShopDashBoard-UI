@@ -83,7 +83,6 @@ const OrdersPage = () => {
 
     return matchesSearch && matchesStatus;
   });
-
   const totalPending = orders.reduce(
     (sum, order) => (order.status.toLowerCase() === "pending" ? sum + order.amount + (order.shippingFee || 0) : sum),
     0,
@@ -163,7 +162,7 @@ const OrdersPage = () => {
     setUpdatedStatus(e.target.value);
   };
 
-  const handleSave = async (shippingFee: number | "") => {
+  const handleSave = async () => {
     if (selectedOrder) {
       try {
         const statusToSave =
@@ -171,7 +170,7 @@ const OrdersPage = () => {
             ? selectedOrder.status
             : updatedStatus;
   
-        await updateOrderStatus(selectedOrder.id, statusToSave, shippingFee);
+        await updateOrderStatus(selectedOrder.id, statusToSave);
   
         alert("Order updated successfully!");
         closeModal();
