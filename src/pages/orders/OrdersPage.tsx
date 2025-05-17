@@ -19,6 +19,7 @@ type Order = {
   items: Array<string>;
   payment: string;
   shippingFee: number;
+  grandTotal:number;
 };
 
 const OrdersPage = () => {
@@ -84,36 +85,36 @@ const OrdersPage = () => {
     return matchesSearch && matchesStatus;
   });
   const totalPending = orders.reduce(
-    (sum, order) => (order.status.toLowerCase() === "pending" ? sum + order.amount + (order.shippingFee || 0) : sum),
+    (sum, order) => (order.status.toLowerCase() === "pending" ? sum + order.grandTotal : sum),
     0,
   );
-  
+
   const totalProcessing = orders.reduce(
     (sum, order) => 
       (order.status.toLowerCase() === "processing" 
-        ? sum + order.amount + (order.shippingFee || 0) 
+        ? sum + order.grandTotal  
         : sum),
     0
   );
   
   
   const totalShipped = orders.reduce(
-    (sum, order) => (order.status.toLowerCase() === "shipped" ? sum + order.amount + (order.shippingFee || 0) : sum),
+    (sum, order) => (order.status.toLowerCase() === "shipped" ? sum + order.grandTotal : sum),
     0,
   );
   
   const totalCompleted = orders.reduce(
-    (sum, order) => (order.status.toLowerCase() === "completed" ? sum + order.amount + (order.shippingFee || 0) : sum),
+    (sum, order) => (order.status.toLowerCase() === "completed" ? sum + order.grandTotal : sum),
     0,
   );
   
   const totalCancelled = orders.reduce(
-    (sum, order) => (order.status.toLowerCase() === "cancelled" ? sum + order.amount: sum),
+    (sum, order) => (order.status.toLowerCase() === "cancelled" ? sum + order.grandTotal: sum),
     0,
   );
   
   const grandTotal = orders.reduce(
-    (sum, order) => sum + order.amount + (order.shippingFee || 0) ,
+    (sum, order) => sum + order.grandTotal ,
     0,
   );
   
