@@ -135,11 +135,11 @@ const ProductFormPage = () => {
 
   const validateForm = () => {
     const newErrors: { [key: string]: string } = {};
-
+  
     if (!formData.name.trim()) {
       newErrors.name = "Product name is required";
     }
-
+  
     if (!formData.price.trim()) {
       newErrors.price = "Price is required";
     } else if (
@@ -149,7 +149,7 @@ const ProductFormPage = () => {
       newErrors.price =
         "Price must be a valid number greater than or equal to 0";
     }
-
+  
     if (!formData.inventory.trim()) {
       newErrors.inventory = "Inventory quantity is required";
     } else if (
@@ -159,13 +159,19 @@ const ProductFormPage = () => {
       newErrors.inventory =
         "Inventory must be a valid number greater than or equal to 0";
     }
-
+  
     if (!formData.category.trim()) {
       newErrors.category = "Category is required";
     }
-
+  
+    // NEW: Image required if adding product (not editing)
+    if (!isEditMode && !imageFile) {
+      newErrors.image = "Product image is required";
+    }
+  
     return newErrors;
   };
+  
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -346,7 +352,7 @@ const ProductFormPage = () => {
     htmlFor="image"
     className="block text-sm font-medium text-gray-700"
   >
-    Upload Image
+    Upload Image<span className="text-red-500">*</span>
   </label>
   <input
     type="file"
@@ -360,6 +366,9 @@ const ProductFormPage = () => {
     }}
     className="mt-1 block w-full text-sm text-gray-900 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
   />
+  {errors.image && (
+  <p className="mt-1 text-sm text-red-600">{errors.image}</p>
+)}
   {/* Image Preview */}
   {(imageFile || formData.image) && (
     <img
@@ -383,7 +392,7 @@ const ProductFormPage = () => {
                   htmlFor="description"
                   className="block text-sm font-medium text-gray-700"
                 >
-                  Description
+                  Description<span className="text-red-500">*</span>
                 </label>
                 <textarea
                   name="description"
@@ -452,35 +461,59 @@ const ProductFormPage = () => {
                 )}
               </div>
 
-
-              <CreatableSelect
-  name="category"
-  id="category"
-  value={formData.category ? { label: formData.category, value: formData.category } : null}
-  onChange={(selectedOption) => {
-    handleChange({
-      target: {
-        name: "category",
-        value: selectedOption?.value ?? ""
-      }
-    } as React.ChangeEvent<HTMLSelectElement>);
-  }}
-  options={CategoriesData?.map((category) => ({
-    label: category.name.toUpperCase(),
-    value: category.name.toUpperCase()
-  }))}
-  className={`mt-1 block w-full rounded-md shadow-sm ${
-    errors.category
-      ? "border-red-300 focus:ring-red-500 focus:border-red-500"
-      : "border-gray-300 focus:ring-blue-500 focus:border-blue-500"
-  }`}
-  isClearable
-  placeholder="Select or type a category"
-  menuPortalTarget={document.body}
-/>
-
-
-
+              <div className="sm:col-span-3">
+  <label
+    htmlFor="category"
+    className="block text-sm font-medium text-gray-700"
+  >
+    Category <span className="text-red-500">*</span>
+  </label>
+  <CreatableSelect
+    name="category"
+    id="category"
+    value={formData.category ? { label: formData.category, value: formData.category } : null}
+    onChange={(selectedOption) => {
+      handleChange({
+        target: {
+          name: "category",
+          value: selectedOption?.value ?? ""
+        }
+      } as React.ChangeEvent<HTMLSelectElement>);
+    }}
+    options={CategoriesData?.map((category) => ({
+      label: category.name.toUpperCase(),
+      value: category.name.toUpperCase()
+    }))}
+    classNamePrefix="react-select"
+    className={`mt-1`}
+    isClearable
+    placeholder="Select or type a category"
+    menuPortalTarget={document.body}
+    styles={{
+      control: (base, state) => ({
+        ...base,
+        borderColor: errors.category ? "#f87171" : "#d1d5db", // Tailwind red-400 or gray-300
+        boxShadow: state.isFocused
+          ? errors.category
+            ? "0 0 0 1px #ef4444" // red-500 focus ring
+            : "0 0 0 1px #3b82f6" // blue-500 focus ring
+          : null,
+        "&:hover": {
+          borderColor: state.isFocused
+            ? errors.category
+              ? "#ef4444"
+              : "#3b82f6"
+            : base.borderColor,
+        },
+        borderRadius: "0.375rem", // rounded-md
+      }),
+      menuPortal: (base) => ({ ...base, zIndex: 9999 }),
+    }}
+  />
+  {errors.category && (
+    <p className="mt-1 text-sm text-red-600">{errors.category}</p>
+  )}
+</div>
 
             </div>
           </div>

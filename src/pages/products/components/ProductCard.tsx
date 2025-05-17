@@ -10,7 +10,6 @@ type ProductCardProps = {
     price: number;
     category: string;
     stock: number;
-    status: string;
     image: string;
   };
   onDelete: () => void;
@@ -18,19 +17,6 @@ type ProductCardProps = {
 };
 
 const ProductCard = React.memo(({ product, onDelete }: ProductCardProps) => {
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "Active":
-        return "bg-green-100 text-green-800";
-      case "Out of Stock":
-        return "bg-red-100 text-red-800";
-      case "Low Stock":
-        return "bg-yellow-100 text-yellow-800";
-      default:
-        return "bg-gray-100 text-gray-800";
-    }
-  };
-
   return (
     <div className="bg-white rounded-lg shadow-sm overflow-hidden hover:shadow-md transition-shadow duration-300">
       <div className="relative h-48 bg-gray-200">
@@ -46,13 +32,7 @@ const ProductCard = React.memo(({ product, onDelete }: ProductCardProps) => {
             <Package className="h-12 w-12 text-gray-400" />
           </div>
         )}
-        <div className="absolute top-2 right-2 bg-white rounded-full p-1.5 shadow-sm">
-          <span
-            className={`px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(product.status)}`}
-          >
-            {product.status}
-          </span>
-        </div>
+        {/* Removed status badge */}
       </div>
       <div className="p-4">
         <div className="flex justify-between items-start mb-2">
@@ -100,15 +80,13 @@ const ProductCard = React.memo(({ product, onDelete }: ProductCardProps) => {
   );
 }, areEqual);
 
-// Optional: Custom equality check to avoid re-renders unless `product.id` or key fields change
+// Updated equality check to remove status from comparison
 function areEqual(prevProps: ProductCardProps, nextProps: ProductCardProps) {
   return (
     prevProps.product.id === nextProps.product.id &&
     prevProps.product.name === nextProps.product.name &&
     prevProps.product.image === nextProps.product.image &&
-    prevProps.product.status === nextProps.product.status &&
     prevProps.product.stock === nextProps.product.stock
-    // You can add more checks if needed, or serialize and compare JSON
   );
 }
 

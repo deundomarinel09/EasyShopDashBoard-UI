@@ -12,7 +12,7 @@ type Product = {
   price: number;
   category: string;
   inventory: number;
-  status: string;
+  // status: string;  <-- removed status property from type if you want
   image: string;
   stock: number;
 };
@@ -21,8 +21,7 @@ const ProductsPage = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
-  const [selectedStatus, setSelectedStatus] = useState("All");
-  const [viewMode, setViewMode] = useState("grid");
+  const [viewMode, setViewMode] = useState("list");
 
   useEffect(() => {
     const loadProducts = async () => {
@@ -50,23 +49,19 @@ const ProductsPage = () => {
     const matchesCategory =
       selectedCategory === "All" || (product.category || "Uncategorized") === selectedCategory;
 
-    const matchesStatus =
-      selectedStatus === "All" || product.status === selectedStatus;
-
-    return matchesSearch && matchesCategory && matchesStatus;
+    return matchesSearch && matchesCategory;
   });
 
   const handleDeleteProduct = async (productId: number) => {
     if (window.confirm("Are you sure you want to delete this product?")) {
       try {
-        await fetchDeleteProductData(productId); // Call API to delete the product
-        setProducts(products.filter((product) => product.id !== productId)); // Update state to remove product
+        await fetchDeleteProductData(productId);
+        setProducts(products.filter((product) => product.id !== productId));
       } catch (error: any) {
         alert(`Error deleting product: ${error.message}`);
       }
     }
   };
-  
 
   return (
     <div className="space-y-6">
@@ -76,23 +71,22 @@ const ProductsPage = () => {
           <p className="text-gray-500">Manage your product catalog</p>
         </div>
         <div className="flex flex-wrap gap-3">
-  <Link
-    to="/products/new"
-    className="flex items-center justify-center bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-150"
-  >
-    <Plus className="h-5 w-5 mr-2" />
-    Add Product
-  </Link>
+          <Link
+            to="/products/new"
+            className="flex items-center justify-center bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-150"
+          >
+            <Plus className="h-5 w-5 mr-2" />
+            Add Product
+          </Link>
 
-  <Link
-    to="/products/category"
-    className="flex items-center justify-center bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-150"
-  >
-    <Plus className="h-5 w-5 mr-2" />
-    Add Category
-  </Link>
-</div>
-
+          <Link
+            to="/products/category"
+            className="flex items-center justify-center bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-150"
+          >
+            <Plus className="h-5 w-5 mr-2" />
+            Add Category
+          </Link>
+        </div>
       </div>
 
       {/* Filters and Search */}
@@ -126,16 +120,6 @@ const ProductsPage = () => {
                 ))}
               </select>
             </div>
-            <select
-              className="border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              value={selectedStatus}
-              onChange={(e) => setSelectedStatus(e.target.value)}
-            >
-              <option value="All">All Status</option>
-              <option value="Active">Active</option>
-              <option value="Out of Stock">Out of Stock</option>
-              <option value="Low Stock">Low Stock</option>
-            </select>
             <div className="bg-gray-100 rounded-md p-1 flex">
               <button
                 className={`p-1.5 rounded ${viewMode === "grid" ? "bg-white shadow-sm" : "text-gray-500 hover:text-gray-700"}`}
@@ -159,7 +143,7 @@ const ProductsPage = () => {
       {/* Product Grid/List */}
       {filteredProducts.length > 0 ? (
         viewMode === "grid" ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
             {filteredProducts.map((product) => (
               <ProductCard
                 key={product.id}
@@ -179,7 +163,7 @@ const ProductsPage = () => {
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Price</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Inventory</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                    {/* Removed Status column */}
                     <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                   </tr>
                 </thead>
@@ -212,7 +196,6 @@ const ProductsPage = () => {
             onClick={() => {
               setSearchTerm("");
               setSelectedCategory("All");
-              setSelectedStatus("All");
             }}
             className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
           >

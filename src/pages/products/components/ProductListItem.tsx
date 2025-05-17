@@ -8,39 +8,32 @@ type ProductListItemProps = {
     description: string;
     price: number;
     category: string;
-    inventory: number;
-    status: string;
+    stock: number;
     image: string;
   };
   onDelete: () => void;
   categoryNames: string[];
 };
 
-
 const ProductListItem = ({ product, onDelete }: ProductListItemProps) => {
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "Active":
-        return "bg-green-100 text-green-800";
-      case "Out of Stock":
-        return "bg-red-100 text-red-800";
-      case "Low Stock":
-        return "bg-yellow-100 text-yellow-800";
-      default:
-        return "bg-gray-100 text-gray-800";
-    }
-  };
+  const imageUrl = product.image
+    ? `https://wyzlpxshonuzitdcgdoe.supabase.co/storage/v1/object/public/product-images/${product.image.replace(
+        /^product-images\//,
+        ""
+      )}`
+    : null;
 
   return (
     <tr className="hover:bg-gray-50 transition-colors duration-150">
       <td className="px-6 py-4 whitespace-nowrap">
         <div className="flex items-center">
           <div className="flex-shrink-0 h-10 w-10 rounded overflow-hidden bg-gray-100">
-            {product.image ? (
+            {imageUrl ? (
               <img
-                src={product.image}
+                src={imageUrl}
                 alt={product.name}
                 className="h-full w-full object-cover"
+                loading="lazy"
               />
             ) : (
               <div className="h-full w-full flex items-center justify-center">
@@ -63,19 +56,13 @@ const ProductListItem = ({ product, onDelete }: ProductListItemProps) => {
       </td>
       <td className="px-6 py-4 whitespace-nowrap">
         <div className="text-sm font-medium text-gray-900">
-          ${product.price.toFixed(2)}
+          ₱{product.price.toFixed(2)}
         </div>
       </td>
       <td className="px-6 py-4 whitespace-nowrap">
-        <div className="text-sm text-gray-900">{product.inventory}</div>
+        <div className="text-sm text-gray-900">{product.stock}</div>
       </td>
-      <td className="px-6 py-4 whitespace-nowrap">
-        <span
-          className={`px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusColor(product.status)}`}
-        >
-          {product.status}
-        </span>
-      </td>
+      {/* Removed status column */}
       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
         <div className="flex items-center justify-end space-x-3">
           <Link
