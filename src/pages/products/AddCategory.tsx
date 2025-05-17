@@ -85,7 +85,7 @@ const AddCategory = () => {
               htmlFor="category-name"
               className="block text-sm font-medium text-gray-700"
             >
-              Category Name
+              Category Name<span className="text-red-500">*</span>
             </label>
             <input
               id="category-name"
