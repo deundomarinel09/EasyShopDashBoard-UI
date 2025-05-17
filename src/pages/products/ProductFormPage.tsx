@@ -23,10 +23,7 @@ type Product = {
   price: number;
   category: string;
   inventory: number;
-  status: string;
-  sku: string;
-  weight: string;
-  dimensions: string;
+  weight: number;
   image: string;
   attributes: Attribute[];
   stock: number;
@@ -78,10 +75,7 @@ const ProductFormPage = () => {
               category: fetchedProduct.category || "",
               inventory: fetchedProduct.stock.toString(),
               unit: fetchedProduct.unit || "",
-              status: fetchedProduct.status || "Active",
-              sku: fetchedProduct.sku || "",
               weight: fetchedProduct.weight || "",
-              dimensions: fetchedProduct.dimensions || "",
               image: fetchedProduct.image || "",
             });
           }
@@ -138,10 +132,7 @@ const ProductFormPage = () => {
         category: productData.category || "",
         inventory: productData.stock.toString(),
         unit: productData.unit || "",
-        status: productData.status || "Active",
-        sku: productData.sku || "",
-        weight: productData.weight || "",
-        dimensions: productData.dimensions || "",
+        weight: productData.weight.toString(),
         image: productData.image || "",
       });
 
@@ -157,10 +148,7 @@ const ProductFormPage = () => {
       category: "",
       inventory: "",
       unit: "",
-      status: "Active",
-      sku: "",
       weight: "",
-      dimensions: "",
       image: "",
     });
   const handleChange = (
@@ -260,10 +248,7 @@ const ProductFormPage = () => {
       form.append("stock", formData.inventory);
       form.append("unit", formData.unit);
       form.append("category", formData.category);
-      form.append("status", formData.status);
-      form.append("sku", formData.sku.trim());
       form.append("weight", formData.weight.trim());
-      form.append("dimensions", formData.dimensions.trim());
       form.append("createDate", new Date().toISOString());
       form.append("image", formData.name.trim().replace(/\s+/g, ""));
 
@@ -287,10 +272,7 @@ const ProductFormPage = () => {
       form.append("stock", formData.inventory);
       form.append("unit", formData.unit);
       form.append("category", formData.category);
-      form.append("status", formData.status);
-      form.append("sku", formData.sku.trim());
       form.append("weight", formData.weight.trim());
-      form.append("dimensions", formData.dimensions.trim());
       form.append("createDate", new Date().toISOString());
       form.append("image", formData.name.trim().replace(/\s+/g, ""));
 
@@ -537,7 +519,35 @@ const ProductFormPage = () => {
   )}
 </div>
 
-
+<div className="sm:col-span-3">
+                <label
+                  htmlFor="weight"
+                  className="block text-sm font-medium text-gray-700"
+                >
+                  Weight (KL) <span className="text-red-500">*</span>
+                </label>
+                <div className="mt-1 relative rounded-md shadow-sm">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <span className="text-gray-500 sm:text-sm"></span>
+                  </div>
+                  <input
+                    type="text"
+                    name="weight"
+                    id="weight"
+                    value={formData.weight}
+                    onChange={handleChange}
+                    className={`block w-full pl-7 pr-12 rounded-md ${
+                      errors.price
+                        ? "border-red-300 focus:ring-red-500 focus:border-red-500"
+                        : "border-gray-300 focus:ring-blue-500 focus:border-blue-500"
+                    }`}
+                    placeholder="0.00"
+                  />
+                </div>
+                {errors.weight && (
+                  <p className="mt-1 text-sm text-red-600">{errors.weight}</p>
+                )}
+              </div>
 
               <div className="sm:col-span-3">
                 <label
