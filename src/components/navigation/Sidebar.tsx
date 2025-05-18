@@ -58,6 +58,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
     { name: "Orders", href: "/orders", icon: ShoppingCart },
     { name: "Products", href: "/products", icon: Package },
     { name: "Categories", href: "/products/category", icon: Package},
+    { name: "Reports", href: "/reports",icon: Package},
   ];
 
   return (

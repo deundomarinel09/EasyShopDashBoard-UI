@@ -17,6 +17,7 @@ const ProductFormPage = lazy(() => import("./pages/products/ProductFormPage"));
 const NotFoundPage = lazy(() => import("./pages/NotFoundPage"));
 const VerifyOtp = lazy(() => import("./pages/auth/otpVerification"));
 const AddCategory = lazy(() => import ("./pages/products/AddCategory"));
+const Reports = lazy(()=> import ("./pages/reports/ReportsPage"));
 
 
 function App() {
@@ -44,6 +45,7 @@ function App() {
   <Route path="products/new" element={<ProductFormPage />} />
   <Route path="products/edit/:id" element={<ProductFormPage />} />
   <Route path="products/category" element={<AddCategory/>}/>
+  <Route path="reports" element={<Reports/>}/>
 </Route>
 
 
