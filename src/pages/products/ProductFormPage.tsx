@@ -466,7 +466,7 @@ const ProductFormPage = () => {
                   htmlFor="inventory"
                   className="block text-sm font-medium text-gray-700"
                 >
-                  Inventory <span className="text-red-500">*</span>
+                  Stock <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="number"
