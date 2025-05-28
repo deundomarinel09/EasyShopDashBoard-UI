@@ -128,11 +128,11 @@ const ProductFormPage = () => {
       setFormData({
         name: productData.name,
         description: productData.description,
-        price: productData.price.toString(),
+        price: productData?.price?.toString(),
         category: productData.category || "",
-        inventory: productData.stock.toString(),
+        inventory: productData?.stock?.toString(),
         unit: productData.unit || "",
-        weight: productData.weight.toString(),
+        weight: productData?.weight?.toString(),
         image: productData.image || "",
       });
 
