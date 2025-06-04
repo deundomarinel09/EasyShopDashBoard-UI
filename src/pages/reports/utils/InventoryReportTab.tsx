@@ -5,11 +5,15 @@ interface InventoryReportItem {
   productName: string;
   categoryName: string;
   stockQuantity: number;
+  quantitySold: number;
   reorderLevel?: number | null;
 }
 
 const InventoryReportTab: React.FC = () => {
   const [inventoryData, setInventoryData] = useState<InventoryReportItem[]>([]);
+  const [filteredData, setFilteredData] = useState<InventoryReportItem[]>([]);
+  const [categories, setCategories] = useState<string[]>([]);
+  const [selectedCategory, setSelectedCategory] = useState<string>("All");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -18,10 +22,10 @@ const InventoryReportTab: React.FC = () => {
       setLoading(true);
       setError(null);
       try {
-        const localhost = "https://localhost:7066";
-        const baseUrl = "https://mobileeasyshop.onrender.com"
+        const baseUrl = "https://mobileeasyshop.onrender.com";
+        const test = "https://localhost:7066"
         const endPoint = "/api/Reports/InventoryReport";
-        const response = await fetch(`${baseUrl}${endPoint}`, {
+          const response = await fetch(`${baseUrl}${endPoint}`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
         });
@@ -29,12 +33,13 @@ const InventoryReportTab: React.FC = () => {
           throw new Error(`Error fetching data: ${response.statusText}`);
         }
         const json = await response.json();
-
-        // Your sample API response seems wrapped in $values
-        // Adjust accordingly if API returns { "$values": [...] }
-        const data = json.$values ?? json;
+        const data: InventoryReportItem[] = json.$values ?? json;
 
         setInventoryData(data);
+        setFilteredData(data);
+
+        const uniqueCategories = Array.from(new Set(data.map((item) => item.categoryName)));
+        setCategories(uniqueCategories);
       } catch (err: any) {
         setError(err.message || "Unknown error");
       } finally {
@@ -45,14 +50,25 @@ const InventoryReportTab: React.FC = () => {
     fetchInventory();
   }, []);
 
+  const handleCategoryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const value = e.target.value;
+    setSelectedCategory(value);
+
+    if (value === "All") {
+      setFilteredData(inventoryData);
+    } else {
+      setFilteredData(inventoryData.filter((item) => item.categoryName === value));
+    }
+  };
+
   const convertToCSV = (data: InventoryReportItem[]) => {
     if (data.length === 0) return "";
 
     const header = Object.keys(data[0]).join(",") + "\n";
     const rows = data
-      .map(item =>
+      .map((item) =>
         Object.values(item)
-          .map(value => `"${value ?? ""}"`) // Wrap in quotes to handle commas
+          .map((value) => `"${value ?? ""}"`)
           .join(",")
       )
       .join("\n");
@@ -60,7 +76,7 @@ const InventoryReportTab: React.FC = () => {
   };
 
   const handleDownload = () => {
-    const csv = convertToCSV(inventoryData);
+    const csv = convertToCSV(filteredData);
     if (!csv) return;
 
     const blob = new Blob([csv], { type: "text/csv" });
@@ -79,12 +95,27 @@ const InventoryReportTab: React.FC = () => {
 
   return (
     <div>
- <button
-        onClick={handleDownload}
-        className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-      >
-        Download CSV
-      </button>
+      <div className="flex flex-wrap items-center gap-4 mb-4">
+        <select
+          value={selectedCategory}
+          onChange={handleCategoryChange}
+          className="px-4 py-2 border border-gray-300 rounded"
+        >
+          <option value="All">All Categories</option>
+          {categories.map((cat) => (
+            <option key={cat} value={cat}>
+              {cat}
+            </option>
+          ))}
+        </select>
+
+        <button
+          onClick={handleDownload}
+          className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+        >
+          Download CSV
+        </button>
+      </div>
 
       <table className="min-w-full border-collapse border border-gray-300 mb-4 mt-2">
         <thead>
@@ -93,21 +124,24 @@ const InventoryReportTab: React.FC = () => {
             <th className="border border-gray-300 px-4 py-2">Product Name</th>
             <th className="border border-gray-300 px-4 py-2">Category</th>
             <th className="border border-gray-300 px-4 py-2">Stock Quantity</th>
+            <th className="border border-gray-300 px-4 py-2">Quantity Sold</th>
           </tr>
         </thead>
         <tbody>
-          {inventoryData.map(({ productId, productName, categoryName, stockQuantity, reorderLevel }) => (
-            <tr key={productId}>
-              <td className="border border-gray-300 px-4 py-2">{productId}</td>
-              <td className="border border-gray-300 px-4 py-2">{productName}</td>
-              <td className="border border-gray-300 px-4 py-2">{categoryName}</td>
-              <td className="border border-gray-300 px-4 py-2">{stockQuantity}</td>
-            </tr>
-          ))}
+          {filteredData.map(
+            ({ productId, productName, categoryName, stockQuantity, quantitySold }) => (
+              <tr key={productId}>
+                <td className="border border-gray-300 px-4 py-2">{productId}</td>
+                <td className="border border-gray-300 px-4 py-2">{productName}</td>
+                <td className="border border-gray-300 px-4 py-2">{categoryName}</td>
+                <td className="border border-gray-300 px-4 py-2">{stockQuantity}</td>
+                <td className="border border-gray-300 px-4 py-2">{quantitySold}</td>
+
+              </tr>
+            )
+          )}
         </tbody>
       </table>
-
-     
     </div>
   );
 };

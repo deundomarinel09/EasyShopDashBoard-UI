@@ -1,7 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { Line, Doughnut } from "react-chartjs-2";
+import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, ArcElement } from "chart.js";
 import { saveAs } from "file-saver";
 import Papa from "papaparse";
+
+ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, ArcElement);
 
 interface SalesReportItem {
   orderRef: string;
@@ -28,14 +31,11 @@ const SalesReportTab: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-
-
     const fetchSalesReport = async () => {
       setLoading(true);
       setError(null);
       try {
-        const localhost = "https://localhost:7066";
-        const baseUrl = "https://mobileeasyshop.onrender.com"
+        const baseUrl = "https://mobileeasyshop.onrender.com";
         const endPoint = "/api/Reports/SalesReport";
         const res = await fetch(`${baseUrl}${endPoint}`, {
           method: "POST",
@@ -44,8 +44,6 @@ const SalesReportTab: React.FC = () => {
         if (!res.ok) throw new Error(`Error: ${res.statusText}`);
 
         const data = await res.json();
-
-        // Unwrap items if wrapped in $values
         const items: SalesReportItem[] = data.items?.$values ?? data.items ?? [];
 
         setSummary({
@@ -69,35 +67,24 @@ const SalesReportTab: React.FC = () => {
   if (error) return <div className="text-red-600">Error: {error}</div>;
   if (!summary) return null;
 
-  // Prepare summary metrics
   const avgOrderValue =
     summary.totalOrders > 0 ? summary.totalSales / summary.totalOrders : 0;
 
-  // Calculate top product (most sold)
   const productSalesMap = new Map<string, number>();
+  const categorySalesMap = new Map<string, number>();
+  const salesByMonthMap = new Map<string, number>();
+
   summary.items.forEach((item) => {
     productSalesMap.set(
       item.productName,
       (productSalesMap.get(item.productName) || 0) + item.quantity
     );
-  });
-  const topProductEntry = [...productSalesMap.entries()].sort(
-    (a, b) => b[1] - a[1]
-  )[0] || ["-", 0];
 
-  // Prepare sales by category data
-  const categorySalesMap = new Map<string, number>();
-  summary.items.forEach((item) => {
     categorySalesMap.set(
       item.categoryName,
       (categorySalesMap.get(item.categoryName) || 0) + item.totalAmount
     );
-  });
 
-  // Prepare sales by month data (aggregate totalSales by month)
-  // Assuming orderDate is ISO string, e.g., 2025-05-17T19:27:00.097921Z
-  const salesByMonthMap = new Map<string, number>();
-  summary.items.forEach((item) => {
     const date = new Date(item.orderDate);
     const monthLabel = date.toLocaleString("default", { month: "short", year: "numeric" });
     salesByMonthMap.set(
@@ -106,12 +93,13 @@ const SalesReportTab: React.FC = () => {
     );
   });
 
+  const topProductEntry = [...productSalesMap.entries()].sort((a, b) => b[1] - a[1])[0] || ["-", 0];
+
   return (
     <>
       <div className="flex justify-end mb-4">
         <button
           onClick={() => {
-            // CSV for summary
             const csvData = [
               ["Metric", "Value"],
               ["Total Revenue", summary.totalSales.toFixed(2)],
@@ -135,20 +123,11 @@ const SalesReportTab: React.FC = () => {
 
       <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
         {[
-          {
-            label: "Total Revenue",
-            value: `₱${summary.totalSales.toFixed(2)}`,
-          },
+          { label: "Total Revenue", value: `₱${summary.totalSales.toFixed(2)}` },
           { label: "Orders Count", value: summary.totalOrders },
           { label: "Items Sold", value: summary.totalItemsSold },
-          {
-            label: "Delivery Fees",
-            value: `₱${summary.totalDeliveryFees.toFixed(2)}`,
-          },
-          {
-            label: "Avg Order Value",
-            value: `₱${avgOrderValue.toFixed(2)}`,
-          },
+          { label: "Delivery Fees", value: `₱${summary.totalDeliveryFees.toFixed(2)}` },
+          { label: "Avg Order Value", value: `₱${avgOrderValue.toFixed(2)}` },
           { label: "Top Product", value: topProductEntry[0] },
         ].map((item, i) => (
           <div key={i} className="bg-white shadow rounded-2xl p-4">
@@ -160,25 +139,29 @@ const SalesReportTab: React.FC = () => {
 
       <div className="bg-white shadow rounded-2xl p-4 mb-6">
         <h2 className="text-lg font-semibold mb-2">Top Selling Products</h2>
-        <table className="w-full table-auto border">
-          <thead>
-            <tr className="bg-gray-100">
-              <th className="text-left p-2">Product</th>
-              <th className="text-left p-2">Units Sold</th>
-            </tr>
-          </thead>
-          <tbody>
-            {[...productSalesMap.entries()]
-              .sort((a, b) => b[1] - a[1])
-              .slice(0, 10)
-              .map(([name, sold], i) => (
-                <tr key={i} className="border-t">
-                  <td className="p-2">{name}</td>
-                  <td className="p-2">{sold}</td>
-                </tr>
-              ))}
-          </tbody>
-        </table>
+        {productSalesMap.size === 0 ? (
+          <p>No product sales data available.</p>
+        ) : (
+          <table className="w-full table-auto border">
+            <thead>
+              <tr className="bg-gray-100">
+                <th className="text-left p-2">Product</th>
+                <th className="text-left p-2">Units Sold</th>
+              </tr>
+            </thead>
+            <tbody>
+              {[...productSalesMap.entries()]
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, 10)
+                .map(([name, sold], i) => (
+                  <tr key={i} className="border-t">
+                    <td className="p-2">{name}</td>
+                    <td className="p-2">{sold}</td>
+                  </tr>
+                ))}
+            </tbody>
+          </table>
+        )}
       </div>
 
       <div className="grid md:grid-cols-2 gap-6">
@@ -193,12 +176,21 @@ const SalesReportTab: React.FC = () => {
                   data: [...salesByMonthMap.values()],
                   borderColor: "#4F46E5",
                   backgroundColor: "#C7D2FE",
+                  tension: 0.3,
+                  fill: true,
                 },
               ],
             }}
-            options={{ responsive: false }}
-            width={300}
-            height={200}
+            options={{
+              responsive: true,
+              plugins: {
+                legend: { display: true },
+                tooltip: { mode: "index", intersect: false },
+              },
+              scales: {
+                y: { beginAtZero: true },
+              },
+            }}
           />
         </div>
 
@@ -210,13 +202,18 @@ const SalesReportTab: React.FC = () => {
               datasets: [
                 {
                   data: [...categorySalesMap.values()],
-                  backgroundColor: ["#FBBF24", "#34D399", "#60A5FA", "#F87171", "#A78BFA", "#FCD34D"],
+                  backgroundColor: [
+                    "#FBBF24", "#34D399", "#60A5FA", "#F87171", "#A78BFA", "#FCD34D", "#6EE7B7", "#93C5FD"
+                  ],
                 },
               ],
             }}
-            options={{ responsive: false }}
-            width={400}
-            height={300}
+            options={{
+              responsive: true,
+              plugins: {
+                legend: { position: "bottom" },
+              },
+            }}
           />
         </div>
       </div>

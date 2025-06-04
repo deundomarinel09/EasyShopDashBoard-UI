@@ -113,10 +113,7 @@ const OrdersPage = () => {
     0,
   );
   
-  const grandTotal = orders.reduce(
-    (sum, order) => sum + order.grandTotal ,
-    0,
-  );
+  const grandTotal = totalCompleted + totalPending + totalProcessing + totalShipped
   
 
   //for MODAL FUNCTIONALITY

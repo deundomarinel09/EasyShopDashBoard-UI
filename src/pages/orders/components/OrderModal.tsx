@@ -31,7 +31,7 @@ const OrderModal: React.FC<OrderModalProps> = ({
 }) => {
   const [localStatus, setLocalStatus] = useState("");
 
-  const statusFlow = ["Pending", "Processing", "Shipped", "Completed"];
+  const statusFlow = ["Pending", "Processing", "Shipped"];
 
   useEffect(() => {
     if (selectedOrder) {
