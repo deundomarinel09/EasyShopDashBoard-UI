@@ -10,6 +10,7 @@ type ProductListItemProps = {
     category: string;
     stock: number;
     image: string;
+    uom:string;
     unit: string; 
     weight: number;
   };
@@ -69,6 +70,9 @@ const ProductListItem = ({ product, onDelete }: ProductListItemProps) => {
       </td>
       <td className="px-6 py-4 whitespace-nowrap">
         <div className="text-sm text-gray-900">{product.weight}</div>
+      </td>
+      <td className="px-6 py-4 whitespace-nowrap">
+        <div className="text-sm text-gray-900">{product.uom}</div>
       </td>
       {/* Removed status column */}
       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">

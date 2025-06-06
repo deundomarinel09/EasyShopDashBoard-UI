@@ -11,6 +11,21 @@ import {
   fetchUnitsData,
 } from "../api/productApi";
 
+const uomOptions = [
+  "kg",
+  "g",
+  "mg",
+  "lb",
+  "oz",
+  "L",
+  "mL",
+  "gal",
+  "fl oz",
+  "pc",
+  "dozen",
+  "pack",
+];
+
 type Attribute = {
   name: string;
   value: string;
@@ -24,6 +39,7 @@ type Product = {
   category: string;
   inventory: number;
   weight: number;
+  uom: string;
   image: string;
   attributes: Attribute[];
   stock: number;
@@ -65,7 +81,7 @@ const ProductFormPage = () => {
           const response = await fetchListProductByIdData(numericId);
           const fetchedProduct = response.data || null;
           setProduct(fetchedProduct);
-  
+
           // Populate form here directly
           if (fetchedProduct) {
             setFormData({
@@ -76,19 +92,18 @@ const ProductFormPage = () => {
               inventory: fetchedProduct.stock.toString(),
               unit: fetchedProduct.unit || "",
               weight: fetchedProduct.weight || "",
+              uom: fetchedProduct.uom || "",
               image: fetchedProduct.image || "",
             });
           }
-  
         } catch (error: any) {
           alert(`Error fetching product: ${error.message}`);
         }
       };
-  
+
       loadProducts();
     }
   }, [isEditMode, numericId]);
-  
 
   useEffect(() => {
     const loadUnits = async () => {
@@ -108,16 +123,16 @@ const ProductFormPage = () => {
     const loadCategories = async () => {
       try {
         const response = await fetchCategoriesData(); // Corrected
-        const fetchedCategories = (response.data as CategoryResponse)?.$values || [];
+        const fetchedCategories =
+          (response.data as CategoryResponse)?.$values || [];
         setCategories(fetchedCategories);
       } catch (error: any) {
         alert(`Error fetching categories: ${error.message}`);
       }
     };
-  
+
     loadCategories();
   }, []);
-  
 
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [isSaving, setIsSaving] = useState(false);
@@ -133,23 +148,24 @@ const ProductFormPage = () => {
         inventory: productData?.stock?.toString(),
         unit: productData.unit || "",
         weight: productData?.weight?.toString(),
+        uom: productData?.uom || "",
         image: productData.image || "",
       });
-
     }
   }, [numericId, isEditMode, productData]);
 
-    // Form state
-    const [formData, setFormData] = useState({
-      name: "",
-      description: "",
-      price: "",
-      category: "",
-      inventory: "",
-      unit: "",
-      weight: "",
-      image: "",
-    });
+  // Form state
+  const [formData, setFormData] = useState({
+    name: "",
+    description: "",
+    price: "",
+    category: "",
+    inventory: "",
+    unit: "",
+    weight: "",
+    uom: "",
+    image: "",
+  });
   const handleChange = (
     e: React.ChangeEvent<
       HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
@@ -202,7 +218,7 @@ const ProductFormPage = () => {
     if (!formData.unit.trim()) {
       newErrors.unit = "Unit of Measurement is required";
     }
-    
+
     // NEW: Image required if adding product (not editing)
     if (!isEditMode && !imageFile) {
       newErrors.image = "Product image is required";
@@ -248,6 +264,7 @@ const ProductFormPage = () => {
       form.append("unit", formData.unit);
       form.append("category", formData.category);
       form.append("weight", formData.weight.trim());
+      form.append("uom", formData.uom);
       form.append("createDate", new Date().toISOString());
       form.append("image", formData.name.trim().replace(/\s+/g, ""));
 
@@ -272,6 +289,7 @@ const ProductFormPage = () => {
       form.append("unit", formData.unit);
       form.append("category", formData.category);
       form.append("weight", formData.weight.trim());
+      form.append("uom", formData.uom);
       form.append("createDate", new Date().toISOString());
       form.append("image", formData.name.trim().replace(/\s+/g, ""));
 
@@ -489,41 +507,41 @@ const ProductFormPage = () => {
               </div>
 
               <div className="sm:col-span-3">
-  <label
-    htmlFor="unit"
-    className="block text-sm font-medium text-gray-700"
-  >
-    Unit of Measurement <span className="text-red-500">*</span>
-  </label>
-  <select
-    name="unit"
-    id="unit"
-    value={formData.unit}
-    onChange={handleChange}
-    className={`mt-1 block w-full rounded-md shadow-sm ${
-      errors.unit
-        ? "border-red-300 focus:ring-red-500 focus:border-red-500"
-        : "border-gray-300 focus:ring-blue-500 focus:border-blue-500"
-    }`}
-  >
-    <option value="">-- Select Unit --</option>
-    {UnitsData?.map((unit) => (
-      <option key={unit.id} value={unit.name}>
-        {unit.name}
-      </option>
-    ))}
-  </select>
-  {errors.unit && (
-    <p className="mt-1 text-sm text-red-600">{errors.unit}</p>
-  )}
-</div>
+                <label
+                  htmlFor="unit"
+                  className="block text-sm font-medium text-gray-700"
+                >
+                  Unit of Measurement <span className="text-red-500">*</span>
+                </label>
+                <select
+                  name="unit"
+                  id="unit"
+                  value={formData.unit}
+                  onChange={handleChange}
+                  className={`mt-1 block w-full rounded-md shadow-sm ${
+                    errors.unit
+                      ? "border-red-300 focus:ring-red-500 focus:border-red-500"
+                      : "border-gray-300 focus:ring-blue-500 focus:border-blue-500"
+                  }`}
+                >
+                  <option value="">-- Select Unit --</option>
+                  {UnitsData?.map((unit) => (
+                    <option key={unit.id} value={unit.name}>
+                      {unit.name}
+                    </option>
+                  ))}
+                </select>
+                {errors.unit && (
+                  <p className="mt-1 text-sm text-red-600">{errors.unit}</p>
+                )}
+              </div>
 
-<div className="sm:col-span-3">
+              <div className="sm:col-span-3">
                 <label
                   htmlFor="weight"
                   className="block text-sm font-medium text-gray-700"
                 >
-                  Weight (KG) <span className="text-red-500">*</span>
+                  Weight <span className="text-red-500">*</span>
                 </label>
                 <div className="mt-1 relative rounded-md shadow-sm">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -545,6 +563,40 @@ const ProductFormPage = () => {
                 </div>
                 {errors.weight && (
                   <p className="mt-1 text-sm text-red-600">{errors.weight}</p>
+                )}
+              </div>
+
+              <div className="sm:col-span-3">
+                <label
+                  htmlFor="uom"
+                  className="block text-sm font-medium text-gray-700"
+                >
+                  Weight UOM <span className="text-red-500">*</span>
+                </label>
+                <div className="mt-1 relative rounded-md shadow-sm">
+                  <select
+                    name="uom"
+                    id="uom"
+                    value={formData.uom}
+                    onChange={handleChange}
+                    className={`block w-full pl-3 pr-12 rounded-md ${
+                      errors.uom
+                        ? "border-red-300 focus:ring-red-500 focus:border-red-500"
+                        : "border-gray-300 focus:ring-blue-500 focus:border-blue-500"
+                    }`}
+                  >
+                    <option value="" disabled>
+                      Select unit
+                    </option>
+                    {uomOptions.map((unit) => (
+                      <option key={unit} value={unit}>
+                        {unit}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                {errors.uom && (
+                  <p className="mt-1 text-sm text-red-600">{errors.uom}</p>
                 )}
               </div>
 
