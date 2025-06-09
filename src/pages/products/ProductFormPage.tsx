@@ -535,7 +535,7 @@ const ProductFormPage = () => {
                   <p className="mt-1 text-sm text-red-600">{errors.unit}</p>
                 )}
               </div>
-
+<div className="flex flex-col sm:flex-row gap-4">
               <div className="sm:col-span-3">
                 <label
                   htmlFor="weight"
@@ -599,7 +599,7 @@ const ProductFormPage = () => {
                   <p className="mt-1 text-sm text-red-600">{errors.uom}</p>
                 )}
               </div>
-
+</div>
               <div className="sm:col-span-3">
                 <label
                   htmlFor="category"
