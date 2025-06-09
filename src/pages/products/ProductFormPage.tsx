@@ -535,71 +535,73 @@ const ProductFormPage = () => {
                   <p className="mt-1 text-sm text-red-600">{errors.unit}</p>
                 )}
               </div>
-<div className="flex flex-col sm:flex-row gap-4">
-              <div className="sm:col-span-3">
-                <label
-                  htmlFor="weight"
-                  className="block text-sm font-medium text-gray-700"
-                >
-                  Weight <span className="text-red-500">*</span>
-                </label>
-                <div className="mt-1 relative rounded-md shadow-sm">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <span className="text-gray-500 sm:text-sm"></span>
-                  </div>
-                  <input
-                    type="text"
-                    name="weight"
-                    id="weight"
-                    value={formData.weight}
-                    onChange={handleChange}
-                    className={`block w-full pl-7 pr-12 rounded-md ${
-                      errors.price
-                        ? "border-red-300 focus:ring-red-500 focus:border-red-500"
-                        : "border-gray-300 focus:ring-blue-500 focus:border-blue-500"
-                    }`}
-                    placeholder="0.00"
-                  />
-                </div>
-                {errors.weight && (
-                  <p className="mt-1 text-sm text-red-600">{errors.weight}</p>
-                )}
-              </div>
 
-              <div className="sm:col-span-3">
-                <label
-                  htmlFor="uom"
-                  className="block text-sm font-medium text-gray-700"
-                >
-                  Weight UOM <span className="text-red-500">*</span>
-                </label>
-                <div className="mt-1 relative rounded-md shadow-sm">
-                  <select
-                    name="uom"
-                    id="uom"
-                    value={formData.uom}
-                    onChange={handleChange}
-                    className={`block w-full pl-3 pr-12 rounded-md ${
-                      errors.uom
-                        ? "border-red-300 focus:ring-red-500 focus:border-red-500"
-                        : "border-gray-300 focus:ring-blue-500 focus:border-blue-500"
-                    }`}
-                  >
-                    <option value="" disabled>
-                      Select unit
-                    </option>
-                    {uomOptions.map((unit) => (
-                      <option key={unit} value={unit}>
-                        {unit}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                {errors.uom && (
-                  <p className="mt-1 text-sm text-red-600">{errors.uom}</p>
-                )}
-              </div>
+<div className="flex flex-col sm:flex-row gap-2">
+  {/* Weight - narrower */}
+  <div className="sm:w-1/4">
+    <label
+      htmlFor="weight"
+      className="block text-sm font-medium text-gray-700"
+    >
+      Weight <span className="text-red-500">*</span>
+    </label>
+    <div className="mt-1 relative rounded-md shadow-sm">
+      <input
+        type="text"
+        name="weight"
+        id="weight"
+        value={formData.weight}
+        onChange={handleChange}
+        className={`block w-full pl-3 pr-3 rounded-md ${
+          errors.weight
+            ? "border-red-300 focus:ring-red-500 focus:border-red-500"
+            : "border-gray-300 focus:ring-blue-500 focus:border-blue-500"
+        }`}
+        placeholder="0.00"
+      />
+    </div>
+    {errors.weight && (
+      <p className="mt-1 text-sm text-red-600">{errors.weight}</p>
+    )}
+  </div>
+
+  {/* UOM - wider */}
+  <div className="sm:w-1/2">
+    <label
+      htmlFor="uom"
+      className="block text-sm font-medium text-gray-700"
+    >
+      Weight UOM <span className="text-red-500">*</span>
+    </label>
+    <div className="mt-1 relative rounded-md shadow-sm">
+      <select
+        name="uom"
+        id="uom"
+        value={formData.uom}
+        onChange={handleChange}
+        className={`block w-full pl-3 pr-3 rounded-md ${
+          errors.uom
+            ? "border-red-300 focus:ring-red-500 focus:border-red-500"
+            : "border-gray-300 focus:ring-blue-500 focus:border-blue-500"
+        }`}
+      >
+        <option value="" disabled>
+          Select unit
+        </option>
+        {uomOptions.map((unit) => (
+          <option key={unit} value={unit}>
+            {unit}
+          </option>
+        ))}
+      </select>
+    </div>
+    {errors.uom && (
+      <p className="mt-1 text-sm text-red-600">{errors.uom}</p>
+    )}
+  </div>
 </div>
+
+
               <div className="sm:col-span-3">
                 <label
                   htmlFor="category"
