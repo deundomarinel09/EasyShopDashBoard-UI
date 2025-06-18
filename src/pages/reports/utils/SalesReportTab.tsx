@@ -72,7 +72,31 @@ const SalesReportTab: React.FC = () => {
 
   const productSalesMap = new Map<string, number>();
   const categorySalesMap = new Map<string, number>();
-  const salesByMonthMap = new Map<string, number>();
+const currentYear = new Date().getFullYear();
+
+const monthLabels: string[] = [
+  "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+  "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
+];
+
+// Ensure months are prefilled with 0 for the chart
+const salesByMonthMap: Map<string, number> = new Map();
+monthLabels.forEach((month) => {
+  const label = `${month} ${currentYear}`;
+  salesByMonthMap.set(label, 0);
+});
+
+// Aggregate sales data per month
+summary.items.forEach((item) => {
+  const date = new Date(item.orderDate);
+  const itemYear = date.getFullYear();
+  const itemMonth = date.toLocaleString("default", { month: "short" });
+
+  const label = `${itemMonth} ${itemYear}`;
+  if (itemYear === currentYear && salesByMonthMap.has(label)) {
+    salesByMonthMap.set(label, (salesByMonthMap.get(label) || 0) + item.totalAmount);
+  }
+});
 
   summary.items.forEach((item) => {
     productSalesMap.set(
