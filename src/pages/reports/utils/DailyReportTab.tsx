@@ -38,7 +38,7 @@ const DailyReportTab: React.FC = () => {
         const test = "https://localhost:7066";
         const baseUrl = "https://mobileeasyshop.onrender.com";
         const endPoint = "/api/Reports/DailyReport";
-        const res = await fetch(`${baseUrl}${endPoint}`, {
+        const res = await fetch(`${test}${endPoint}`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
         });
@@ -79,6 +79,15 @@ const monthLabels: string[] = [
   "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
 ];
 
+const salesByHourMap: Map<string, number> = new Map();
+for (let hour = 0; hour < 24; hour++) {
+  const label = new Date(0, 0, 0, hour).toLocaleTimeString([], {
+    hour: "numeric",
+    hour12: true,
+  });
+  salesByHourMap.set(label, 0);
+}
+
 // Ensure months are prefilled with 0 for the chart
 const salesByMonthMap: Map<string, number> = new Map();
 monthLabels.forEach((month) => {
@@ -89,12 +98,14 @@ monthLabels.forEach((month) => {
 // Aggregate sales data per month
 summary.items.forEach((item) => {
   const date = new Date(item.orderDate);
-  const itemYear = date.getFullYear();
-  const itemMonth = date.toLocaleString("default", { month: "short" });
-
-  const label = `${itemMonth} ${itemYear}`;
-  if (itemYear === currentYear && salesByMonthMap.has(label)) {
-    salesByMonthMap.set(label, (salesByMonthMap.get(label) || 0) + item.totalAmount);
+  const isToday = date.toDateString() === new Date().toDateString();
+  if (isToday) {
+    const hour = date.getHours();
+    const label = new Date(0, 0, 0, hour).toLocaleTimeString([], {
+      hour: "numeric",
+      hour12: true,
+    });
+    salesByHourMap.set(label, (salesByHourMap.get(label) || 0) + item.totalAmount);
   }
 });
 
@@ -192,30 +203,31 @@ summary.items.forEach((item) => {
         <div className="bg-white shadow rounded-2xl p-4">
           <h2 className="text-lg font-semibold mb-2">Daily Sales</h2>
           <Line
-            data={{
-              labels: [...salesByMonthMap.keys()],
-              datasets: [
-                {
-                  label: "Revenue",
-                  data: [...salesByMonthMap.values()],
-                  borderColor: "#4F46E5",
-                  backgroundColor: "#C7D2FE",
-                  tension: 0.3,
-                  fill: true,
-                },
-              ],
-            }}
-            options={{
-              responsive: true,
-              plugins: {
-                legend: { display: true },
-                tooltip: { mode: "index", intersect: false },
-              },
-              scales: {
-                y: { beginAtZero: true },
-              },
-            }}
-          />
+  data={{
+    labels: [...salesByHourMap.keys()],
+    datasets: [
+      {
+        label: "Hourly Revenue",
+        data: [...salesByHourMap.values()],
+        borderColor: "#4F46E5",
+        backgroundColor: "#C7D2FE",
+        tension: 0.3,
+        fill: true,
+      },
+    ],
+  }}
+  options={{
+    responsive: true,
+    plugins: {
+      legend: { display: true },
+      tooltip: { mode: "index", intersect: false },
+    },
+    scales: {
+      y: { beginAtZero: true },
+    },
+  }}
+/>
+
         </div>
 
         <div className="bg-white shadow rounded-2xl p-4">
