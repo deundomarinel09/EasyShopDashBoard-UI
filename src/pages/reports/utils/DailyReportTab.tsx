@@ -38,7 +38,7 @@ const DailyReportTab: React.FC = () => {
         const test = "https://localhost:7066";
         const baseUrl = "https://mobileeasyshop.onrender.com";
         const endPoint = "/api/Reports/DailyReport";
-        const res = await fetch(`${test}${endPoint}`, {
+        const res = await fetch(`${baseUrl}${endPoint}`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
         });
