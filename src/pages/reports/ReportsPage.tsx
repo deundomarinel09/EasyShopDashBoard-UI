@@ -1,6 +1,7 @@
 import React, { useState, Suspense, lazy } from "react";
 import SalesReportTab from "./utils/SalesReportTab";
 import CategorySalesSummaryTab from "./utils/CategorySalesSummaryTab";
+import DailyReportTab from "./utils/DailyReportTab";
 
 
 const InventoryReportTab = lazy(() => import("./utils/InventoryReportTab"));
@@ -12,6 +13,7 @@ const SalesDashboard: React.FC = () => {
     <div className="p-6 space-y-6">
       {/* Tabs */}
       <div className="flex border-b mb-4">
+        
         <button
           onClick={() => setActiveTab("salesReport")}
           className={`px-4 py-2 font-semibold ${
@@ -21,6 +23,16 @@ const SalesDashboard: React.FC = () => {
           }`}
         >
           Sales Report
+        </button>
+         <button
+          onClick={() => setActiveTab("dailyReport")}
+          className={`px-4 py-2 font-semibold ${
+            activeTab === "dailyReport"
+              ? "border-b-2 border-blue-600 text-blue-600"
+              : "text-gray-600 hover:text-blue-600"
+          }`}
+        >
+          Daily Report
         </button>
         <button
           onClick={() => setActiveTab("categorySalesSummary")}
@@ -45,6 +57,7 @@ const SalesDashboard: React.FC = () => {
       </div>
 
       {/* Render active tab */}
+      {activeTab === "dailyReport" && <DailyReportTab />}
       {activeTab === "salesReport" && <SalesReportTab />}
       {activeTab === "categorySalesSummary" && <CategorySalesSummaryTab />}
       {activeTab === "inventoryReport" && (
