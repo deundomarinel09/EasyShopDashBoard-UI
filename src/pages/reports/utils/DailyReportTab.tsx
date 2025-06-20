@@ -26,42 +26,54 @@ interface SalesSummary {
 }
 
 const DailyReportTab: React.FC = () => {
+  const today = new Date().toISOString().split("T")[0];
   const [summary, setSummary] = useState<SalesSummary | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [dateFrom, setDateFrom] = useState(today);
+const [dateTo, setDateTo] = useState(today);
 
-  useEffect(() => {
-    const fetchSalesReport = async () => {
-      setLoading(true);
-      setError(null);
-      try {
-        const test = "https://localhost:7066";
-        const baseUrl = "https://mobileeasyshop.onrender.com";
-        const endPoint = "/api/Reports/DailyReport";
-        const res = await fetch(`${baseUrl}${endPoint}`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-        });
-        if (!res.ok) throw new Error(`Error: ${res.statusText}`);
 
-        const data = await res.json();
-        const items: SalesReportItem[] = data.items?.$values ?? data.items ?? [];
-        setSummary({
-          totalOrders: data.totalOrders,
-          totalItemsSold: data.totalItemsSold,
-          totalSales: data.totalSales,
-          totalDeliveryFees: data.totalDeliveryFees,
-          items,
-        });
-      } catch (err: any) {
-        setError(err.message || "Unknown error");
-      } finally {
-        setLoading(false);
-      }
-    };
+  const fetchSalesReport = async () => {
+  setLoading(true);
+  setError(null);
+  try {
+    const test = "https://localhost:7066";
+    const baseUrl = "https://mobileeasyshop.onrender.com";
+    const endPoint = "/api/Reports/DailyReport";
 
-    fetchSalesReport();
-  }, []);
+    const res = await fetch(`${test}${endPoint}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        dateFrom: dateFrom || null,
+        dateTo: dateTo || null,
+      }),
+    });
+
+    if (!res.ok) throw new Error(`Error: ${res.statusText}`);
+
+    const data = await res.json();
+    const items: SalesReportItem[] = data.items?.$values ?? data.items ?? [];
+
+    setSummary({
+      totalOrders: data.totalOrders,
+      totalItemsSold: data.totalItemsSold,
+      totalSales: data.totalSales,
+      totalDeliveryFees: data.totalDeliveryFees,
+      items,
+    });
+  } catch (err: any) {
+    setError(err.message || "Unknown error");
+  } finally {
+    setLoading(false);
+  }
+};
+
+useEffect(() => {
+  fetchSalesReport();
+}, []);
+
 
   if (loading) return <div>Loading Sales Report...</div>;
   if (error) return <div className="text-red-600">Error: {error}</div>;
@@ -98,16 +110,15 @@ monthLabels.forEach((month) => {
 // Aggregate sales data per month
 summary.items.forEach((item) => {
   const date = new Date(item.orderDate);
-  const isToday = date.toDateString() === new Date().toDateString();
-  if (isToday) {
-    const hour = date.getHours();
-    const label = new Date(0, 0, 0, hour).toLocaleTimeString([], {
-      hour: "numeric",
-      hour12: true,
-    });
-    salesByHourMap.set(label, (salesByHourMap.get(label) || 0) + item.totalAmount);
-  }
+  const hour = date.getHours();
+  const label = new Date(0, 0, 0, hour).toLocaleTimeString([], {
+    hour: "numeric",
+    hour12: true,
+  });
+
+  salesByHourMap.set(label, (salesByHourMap.get(label) || 0) + item.totalAmount);
 });
+
 
   summary.items.forEach((item) => {
     productSalesMap.set(
@@ -132,7 +143,33 @@ summary.items.forEach((item) => {
 
   return (
     <>
-      <div className="flex justify-end mb-4">
+<div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 gap-4">
+ <div className="flex items-end gap-2">
+    <div>
+      <label className="block text-sm font-medium text-gray-700">Date From</label>
+      <input
+        type="date"
+        value={dateFrom}
+        onChange={(e) => setDateFrom(e.target.value)}
+        className="border border-gray-300 rounded-md px-3 py-1 text-sm"
+      />
+    </div>
+    <div>
+      <label className="block text-sm font-medium text-gray-700">Date To</label>
+      <input
+        type="date"
+        value={dateTo}
+        onChange={(e) => setDateTo(e.target.value)}
+        className="border border-gray-300 rounded-md px-3 py-1 text-sm"
+      />
+    </div>
+    <button
+      onClick={fetchSalesReport}
+      className="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition text-sm"
+    >
+      Generate Report
+    </button>
+  </div> 
         <button
           onClick={() => {
             const csvData = [
