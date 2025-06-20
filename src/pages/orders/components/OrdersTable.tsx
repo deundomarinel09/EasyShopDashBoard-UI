@@ -1,5 +1,6 @@
 import { Eye } from "lucide-react";
 import { getStatusIcon, getStatusColor } from "../../helper/orderStatusHelpers";
+import React, { useState, useMemo } from "react";
 
 type Order = {
   id: string;
@@ -21,6 +22,16 @@ type OrdersTableProps = {
 
 const OrdersTable = ({ filteredOrders, onViewClick }: OrdersTableProps) => {
 
+  const [dateSortOrder, setDateSortOrder] = useState<"asc" | "desc">("desc");
+
+  const sortedOrders = useMemo(() => {
+  return [...filteredOrders].sort((a, b) => {
+    const dateA = new Date(a.date).getTime();
+    const dateB = new Date(b.date).getTime();
+    return dateSortOrder === "asc" ? dateA - dateB : dateB - dateA;
+  });
+}, [filteredOrders, dateSortOrder]);
+
   return (
     <div className="bg-white rounded-lg shadow-sm overflow-hidden">
       <div className="overflow-x-auto">
@@ -31,7 +42,19 @@ const OrdersTable = ({ filteredOrders, onViewClick }: OrdersTableProps) => {
                 "Order REF",
                 "Name",
                 "Email",
-                "Date",
+               <th
+  key="Date"
+  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer select-none"
+  onClick={() =>
+    setDateSortOrder((prev) => (prev === "asc" ? "desc" : "asc"))
+  }
+>
+  Date{" "}
+  <span>
+    {dateSortOrder === "asc" ? "▲" : "▼"}
+  </span>
+</th>
+,
                 "Distance Delivery Fee",
                 "Weight Delivery Fee",
                 "Items Total",
@@ -49,8 +72,8 @@ const OrdersTable = ({ filteredOrders, onViewClick }: OrdersTableProps) => {
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            {filteredOrders.length > 0 ? (
-              filteredOrders.map((order) => (
+            {sortedOrders.length > 0 ? (
+              sortedOrders.map((order) => (
                 <tr
                   key={order.id}
                   className="hover:bg-gray-50 transition-colors duration-150"

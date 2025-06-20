@@ -2,6 +2,7 @@ import React, { useState, Suspense, lazy } from "react";
 import SalesReportTab from "./utils/SalesReportTab";
 import CategorySalesSummaryTab from "./utils/CategorySalesSummaryTab";
 
+
 const InventoryReportTab = lazy(() => import("./utils/InventoryReportTab"));
 
 const SalesDashboard: React.FC = () => {

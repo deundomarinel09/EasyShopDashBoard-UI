@@ -1,5 +1,7 @@
 import { handlePrint } from "./printUtils";
 import React, { useEffect, useState } from "react";
+import { getStatusIcon, getStatusColor } from "../../helper/orderStatusHelpers";
+
 
 interface OrderModalProps {
   isModalOpen: boolean;
@@ -138,7 +140,7 @@ const OrderModal: React.FC<OrderModalProps> = ({
                 {localStatus === "Cancelled" ? (
                   <p className="text-sm font-semibold text-red-600">Cancelled</p>
                 ) : (
-                  <div className="flex flex-wrap gap-2">
+                  <div className={`flex flex-wrap gap-2 `}>
                     {(() => {
                       const currentIndex = statusFlow.indexOf(selectedOrder?.status);
                       const allowedStatuses = statusFlow.slice(currentIndex + 1);
@@ -154,9 +156,9 @@ const OrderModal: React.FC<OrderModalProps> = ({
                               setLocalStatus(status);
                             }
                           }}
-                          className={`px-4 py-2 rounded-md text-sm font-medium border ${
+                          className={`px-4 py-2 rounded-md text-sm font-medium border  ${
                             localStatus === status
-                              ? "bg-blue-500 text-white border-blue-500"
+                              ? `${getStatusColor(status)} border-transparent`
                               : "bg-white text-gray-700 border-gray-300 hover:bg-gray-100"
                           }`}
                         >
